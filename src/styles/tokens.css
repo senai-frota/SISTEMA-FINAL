@@ -1,0 +1,659 @@
+/* =========================================================
+   TOKENS.CSS
+   Sistema de Gestão de Frota SENAI
+   ========================================================= */
+
+:root {
+
+  /* =======================================================
+     PALETA INSTITUCIONAL SENAI
+     ======================================================= */
+
+  --senai-blue: #164194;
+  --senai-blue-light: #008bd2;
+
+  /* Laranja institucional SENAI */
+  --senai-red: #e84910;
+  --senai-red-dark: #c83d0a;
+  --senai-red-light: #f15b2a;
+  --senai-red-tint: #fdeee8;
+
+  --senai-green: #52ae32;
+  --senai-teal: #6cc2ba;
+
+
+  /* =======================================================
+     NEUTROS
+     ======================================================= */
+
+  --senai-gray: #7d8085;
+  --senai-gray-light: #d9dadd;
+  --senai-gray-lighter: #f1f2f3;
+
+  --senai-white: #ffffff;
+
+  /*
+     Mantido para compatibilidade com componentes antigos.
+  */
+  --senai-black: #34373c;
+
+
+  /* =======================================================
+     TEMA CLARO
+     ======================================================= */
+
+  /* -------------------------------------------------------
+     FUNDOS
+     ------------------------------------------------------- */
+
+  /*
+     Prata muito suave.
+     Não é branco puro e não é azul claro.
+  */
+
+  --color-bg: #f3f5f7;
+
+  --color-surface: #ffffff;
+
+  --color-surface-alt: #eef1f5;
+
+
+  /* -------------------------------------------------------
+     BORDAS
+     ------------------------------------------------------- */
+
+  --color-border: #d8dee7;
+
+  --color-border-strong: #bdc8d6;
+
+
+  /* -------------------------------------------------------
+     TEXTOS
+     ------------------------------------------------------- */
+
+  --color-text: #24364b;
+
+  --color-text-primary: #1d3047;
+
+  --color-text-muted: #647487;
+
+  --color-text-soft: #8997a6;
+
+
+  /* =======================================================
+     IDENTIDADE
+     ======================================================= */
+
+  --color-brand: var(--senai-blue);
+
+
+  /* =======================================================
+     PRIMÁRIA
+     ======================================================= */
+
+  /*
+     LARANJA SENAI
+     Esta é a cor principal dos botões.
+  */
+
+  --color-primary: var(--senai-red);
+
+  --color-primary-hover: var(--senai-red-dark);
+
+  --color-primary-focus: rgba(232, 73, 16, 0.20);
+
+  --color-primary-tint: var(--senai-red-tint);
+
+
+  /* =======================================================
+     CORES COMPLEMENTARES
+     ======================================================= */
+
+  --color-info: var(--senai-blue-light);
+
+  --color-success: var(--senai-green);
+
+  --color-accent: var(--senai-teal);
+
+
+  /* =======================================================
+     ERRO / PERIGO
+     ======================================================= */
+
+  --color-danger: #b7050f;
+
+  --color-danger-hover: #95040c;
+
+  --color-danger-bg: #fdecec;
+
+
+  /* =======================================================
+     FUNDOS DE ESTADO
+     ======================================================= */
+
+  --color-info-bg: #e8f4fb;
+
+  --color-success-bg: #edf8e9;
+
+  --color-accent-bg: #edf8f7;
+
+
+  /* =======================================================
+     SIDEBAR
+     ======================================================= */
+
+  /*
+     Azul SENAI no tema claro.
+  */
+
+  --sidebar-bg: var(--senai-blue);
+
+  --sidebar-text: #ffffff;
+
+  --sidebar-text-muted: rgba(255, 255, 255, 0.70);
+
+  --sidebar-text-soft: rgba(255, 255, 255, 0.84);
+
+  --sidebar-hover: rgba(255, 255, 255, 0.10);
+
+  /*
+     ITEM ATIVO = LARANJA
+  */
+
+  --sidebar-active: var(--senai-red);
+
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+
+  --sidebar-avatar-bg: rgba(255, 255, 255, 0.14);
+
+  --sidebar-scrim: rgba(0, 0, 0, 0.45);
+
+
+  /* =======================================================
+     BOTÃO SAIR
+     ======================================================= */
+
+  --logout-bg: var(--senai-red);
+
+  --logout-border: var(--senai-red);
+
+  --logout-text: #ffffff;
+
+  --logout-hover-bg: var(--senai-red-dark);
+
+  --logout-hover-text: #ffffff;
+
+
+  /* =======================================================
+     STATUS — VEÍCULOS
+     ======================================================= */
+
+  --status-disponivel: #3f9428;
+
+  --status-disponivel-bg: #edf8e9;
+
+
+  --status-em_uso: #a86f18;
+
+  --status-em_uso-bg: #fdf3e3;
+
+
+  --status-manutencao: #65686d;
+
+  --status-manutencao-bg: #e9eaec;
+
+
+  --status-inativo: #7b7e83;
+
+  --status-inativo-bg: #eeeeef;
+
+
+  /* =======================================================
+     STATUS — RESERVAS
+     ======================================================= */
+
+  --status-pendente: #a86f18;
+
+  --status-pendente-bg: #fdf3e3;
+
+
+  --status-aprovada: var(--senai-blue);
+
+  --status-aprovada-bg: #e8eef8;
+
+
+  --status-negada: #b7050f;
+
+  --status-negada-bg: #fdecec;
+
+
+  --status-em_andamento: #703db1;
+
+  --status-em_andamento-bg: #f1e9fb;
+
+
+  --status-concluida: #3f9428;
+
+  --status-concluida-bg: #edf8e9;
+
+
+  --status-cancelada: #65686d;
+
+  --status-cancelada-bg: #e9eaec;
+
+
+  --status-aprovado: #3f9428;
+
+  --status-aprovado-bg: #edf8e9;
+
+
+  --status-rejeitado: #b7050f;
+
+  --status-rejeitado-bg: #fdecec;
+
+
+  --status-vencido: #b7050f;
+
+  --status-vencido-bg: #fdecec;
+
+
+  /* =======================================================
+     MODAIS
+     ======================================================= */
+
+  --modal-overlay: rgba(15, 25, 40, 0.55);
+
+
+  /* =======================================================
+     UPLOAD DE FOTOS
+     ======================================================= */
+
+  --photo-remove-bg: rgba(30, 30, 30, 0.78);
+
+
+  /* =======================================================
+     LOGIN
+     ======================================================= */
+
+  --login-glow-primary: rgba(0, 139, 210, 0.20);
+
+  --login-glow-secondary: rgba(232, 73, 16, 0.18);
+
+
+  /* =======================================================
+     TIPOGRAFIA
+     ======================================================= */
+
+  --font-display:
+    'Archivo',
+    'Inter',
+    system-ui,
+    sans-serif;
+
+  --font-body:
+    'Inter',
+    system-ui,
+    sans-serif;
+
+
+  /* =======================================================
+     BORDAS
+     ======================================================= */
+
+  --radius-sm: 6px;
+
+  --radius-md: 10px;
+
+  --radius-lg: 16px;
+
+
+  /* =======================================================
+     SOMBRAS
+     ======================================================= */
+
+  --shadow-sm:
+    0 1px 2px rgba(22, 65, 148, 0.06);
+
+  --shadow-md:
+    0 4px 16px rgba(22, 65, 148, 0.08);
+
+  --shadow-lg:
+    0 12px 32px rgba(22, 65, 148, 0.14);
+
+
+  /* =======================================================
+     LAYOUT
+     ======================================================= */
+
+  --sidebar-width: 240px;
+
+
+  /* =======================================================
+     TRANSIÇÕES
+     ======================================================= */
+
+  --transition-fast: 150ms ease;
+
+  --transition-normal: 220ms ease;
+}
+
+
+/* =========================================================
+   TEMA ESCURO
+   ========================================================= */
+
+html.dark {
+
+  color-scheme: dark;
+
+
+  /* =======================================================
+     FUNDOS
+     ======================================================= */
+
+  --color-bg: #0d1726;
+
+  --color-surface: #13243a;
+
+  --color-surface-alt: #192f49;
+
+
+  /* =======================================================
+     BORDAS
+     ======================================================= */
+
+  --color-border: #29415d;
+
+  --color-border-strong: #3a5673;
+
+
+  /* =======================================================
+     TEXTOS
+     ======================================================= */
+
+  --color-text: #f1f4f8;
+
+  --color-text-primary: #f1f4f8;
+
+  --color-text-muted: #aeb9c7;
+
+  --color-text-soft: #8796a8;
+
+
+  /* =======================================================
+     IDENTIDADE
+     ======================================================= */
+
+  --color-brand: #ffffff;
+
+
+  /* =======================================================
+     PRIMÁRIA
+     ======================================================= */
+
+  /*
+     O LARANJA CONTINUA SENDO A COR PRINCIPAL
+     NO TEMA ESCURO.
+  */
+
+  --color-primary: var(--senai-red);
+
+  --color-primary-hover: var(--senai-red-light);
+
+  --color-primary-focus: rgba(232, 73, 16, 0.25);
+
+  --color-primary-tint: #43241a;
+
+
+  /* =======================================================
+     CORES COMPLEMENTARES
+     ======================================================= */
+
+  --color-info: #36a9e1;
+
+  --color-success: #68c94a;
+
+  --color-accent: #7ccfc8;
+
+
+  /* =======================================================
+     ERRO / PERIGO
+     ======================================================= */
+
+  --color-danger: #ef626a;
+
+  --color-danger-hover: #f47d84;
+
+  --color-danger-bg: #3b1b1e;
+
+
+  /* =======================================================
+     FUNDOS DE ESTADO
+     ======================================================= */
+
+  --color-info-bg: #15354c;
+
+  --color-success-bg: #193b28;
+
+  --color-accent-bg: #183b3a;
+
+
+  /* =======================================================
+     SIDEBAR
+     ======================================================= */
+
+  --sidebar-bg: #111c2b;
+
+  --sidebar-text: #f4f6f8;
+
+  --sidebar-text-muted: rgba(244, 246, 248, 0.56);
+
+  --sidebar-text-soft: rgba(244, 246, 248, 0.72);
+
+  --sidebar-hover: rgba(255, 255, 255, 0.07);
+
+  /*
+     ITEM ATIVO CONTINUA LARANJA.
+  */
+
+  --sidebar-active: var(--senai-red);
+
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+
+  --sidebar-avatar-bg: rgba(255, 255, 255, 0.08);
+
+  --sidebar-scrim: rgba(0, 0, 0, 0.65);
+
+
+  /* =======================================================
+     BOTÃO SAIR
+     ======================================================= */
+
+  --logout-bg: var(--senai-red);
+
+  --logout-border: var(--senai-red);
+
+  --logout-text: #ffffff;
+
+  --logout-hover-bg: var(--senai-red-dark);
+
+  --logout-hover-text: #ffffff;
+
+
+  /* =======================================================
+     STATUS — VEÍCULOS
+     ======================================================= */
+
+  --status-disponivel: #68c94a;
+
+  --status-disponivel-bg: #193b28;
+
+
+  --status-em_uso: #e3ad45;
+
+  --status-em_uso-bg: #3a2d17;
+
+
+  --status-manutencao: #b4bbc4;
+
+  --status-manutencao-bg: #29343f;
+
+
+  --status-inativo: #969faa;
+
+  --status-inativo-bg: #29343f;
+
+
+  /* =======================================================
+     STATUS — RESERVAS
+     ======================================================= */
+
+  --status-pendente: #e3ad45;
+
+  --status-pendente-bg: #3a2d17;
+
+
+  --status-aprovada: #4fa8df;
+
+  --status-aprovada-bg: #17354b;
+
+
+  --status-negada: #ef626a;
+
+  --status-negada-bg: #3b1b1e;
+
+
+  --status-em_andamento: #b084e8;
+
+  --status-em_andamento-bg: #302044;
+
+
+  --status-concluida: #68c94a;
+
+  --status-concluida-bg: #193b28;
+
+
+  --status-cancelada: #aeb5be;
+
+  --status-cancelada-bg: #29343f;
+
+
+  /* =======================================================
+     MODAIS
+     ======================================================= */
+
+  --modal-overlay: rgba(0, 0, 0, 0.70);
+
+
+  /* =======================================================
+     UPLOAD DE FOTOS
+     ======================================================= */
+
+  --photo-remove-bg: rgba(0, 0, 0, 0.82);
+
+
+  /* =======================================================
+     LOGIN
+     ======================================================= */
+
+  --login-glow-primary: rgba(0, 139, 210, 0.15);
+
+  --login-glow-secondary: rgba(232, 73, 16, 0.16);
+
+
+  /* =======================================================
+     SOMBRAS
+     ======================================================= */
+
+  --shadow-sm:
+    0 1px 2px rgba(0, 0, 0, 0.28);
+
+  --shadow-md:
+    0 4px 16px rgba(0, 0, 0, 0.34);
+
+  --shadow-lg:
+    0 12px 32px rgba(0, 0, 0, 0.48);
+}
+
+
+/* =========================================================
+   BASE
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+
+  -webkit-font-smoothing: antialiased;
+
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal);
+}
+
+
+/* =========================================================
+   TIPOGRAFIA
+   ========================================================= */
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+
+/* =========================================================
+   ROOT
+   ========================================================= */
+
+#root {
+  min-height: 100vh;
+}
+
+
+/* =========================================================
+   SELEÇÃO
+   ========================================================= */
+
+::selection {
+  background: var(--color-primary);
+  color: var(--senai-white);
+}
+
+
+/* =========================================================
+   ACESSIBILIDADE
+   ========================================================= */
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

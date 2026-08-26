@@ -1,0 +1,2178 @@
+/* =========================================================
+   APP.CSS
+   Sistema de Gestão de Frota SENAI
+   Estrutura visual da aplicação
+   ========================================================= */
+
+
+/* =========================================================
+   LAYOUT SHELL
+   ========================================================= */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  color: var(--sidebar-text);
+
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+
+  position: sticky;
+  top: 0;
+  height: 100vh;
+
+  border-right: 1px solid var(--sidebar-border);
+
+  z-index: 20;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 22px 20px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.sidebar-brand strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--sidebar-text);
+}
+
+.sidebar-brand small {
+  color: var(--sidebar-text-muted);
+  font-size: 12px;
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+
+  background: var(--color-primary);
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 17px;
+
+  flex-shrink: 0;
+}
+
+.brand-mark-lg {
+  width: 56px;
+  height: 56px;
+  font-size: 26px;
+  border-radius: var(--radius-md);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 14px 12px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  overflow-y: auto;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 10px 12px;
+
+  border-radius: var(--radius-sm);
+
+  color: var(--sidebar-text-muted);
+
+  font-size: 14px;
+  font-weight: 500;
+
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.sidebar-link:hover {
+  background: var(--sidebar-hover);
+  color: var(--sidebar-text);
+}
+
+.sidebar-link.active {
+  background: var(--sidebar-active);
+  color: #ffffff;
+}
+
+.sidebar-icon {
+  width: 18px;
+  text-align: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.sidebar-footer {
+  padding: 16px;
+
+  border-top: 1px solid var(--sidebar-border);
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+
+  border-radius: 50%;
+
+  background: var(--sidebar-avatar-bg, rgba(255, 255, 255, 0.12));
+  color: var(--sidebar-text);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  flex-shrink: 0;
+}
+
+.user-info {
+  overflow: hidden;
+}
+
+.user-info strong {
+  display: block;
+
+  color: var(--sidebar-text);
+
+  font-size: 13px;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-info small {
+  color: var(--sidebar-text-muted);
+  font-size: 11.5px;
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  background: var(--color-bg);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+
+  padding: 14px 20px;
+
+  background: var(--color-surface);
+
+  border-bottom: 1px solid var(--color-border);
+
+  position: sticky;
+  top: 0;
+
+  z-index: 10;
+}
+
+.topbar-spacer {
+  flex: 1;
+}
+
+.app-content {
+  flex: 1;
+  padding: 32px 40px 60px;
+}
+
+.mobile-menu-btn {
+  display: none;
+}
+
+.sidebar-scrim {
+  display: none;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+
+  padding: 10px 18px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    opacity var(--transition-fast);
+
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-surface-alt);
+}
+
+.btn-ghost-danger {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-danger, #b7050f);
+}
+
+.btn-ghost-danger:hover:not(:disabled) {
+  background: var(--color-danger-bg, #fdecec);
+  border-color: var(--color-danger-bg, #fdecec);
+}
+
+.btn-sm {
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+
+  cursor: pointer;
+
+  font-size: 16px;
+
+  color: var(--color-text-muted);
+
+  padding: 6px;
+
+  border-radius: var(--radius-sm);
+
+  line-height: 1;
+}
+
+.icon-btn:hover {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+}
+
+.link {
+  color: var(--color-primary-hover);
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   BOTÃO SAIR
+   Padrão institucional SENAI
+   ========================================================= */
+
+.sidebar .logout-btn {
+  width: 100%;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 10px 14px;
+
+  border: 1px solid #e84910;
+  border-radius: var(--radius-sm);
+
+  background: #e84910;
+  color: #ffffff;
+
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  box-sizing: border-box;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.sidebar .logout-btn:hover {
+  background: #c93d0d;
+  border-color: #c93d0d;
+  color: #ffffff;
+
+  transform: translateY(-1px);
+
+  box-shadow: 0 4px 10px rgba(232, 73, 16, 0.25);
+}
+
+.sidebar .logout-btn:active {
+  background: #b7350b;
+  border-color: #b7350b;
+
+  color: #ffffff;
+
+  transform: translateY(0);
+
+  box-shadow: none;
+}
+
+.sidebar .logout-btn:focus,
+.sidebar .logout-btn:focus-visible {
+  outline: 2px solid #e84910;
+  outline-offset: 2px;
+
+  color: #ffffff;
+}
+
+.sidebar .logout-btn svg,
+.sidebar .logout-btn span,
+.sidebar .logout-btn i {
+  color: #ffffff;
+}
+
+/* =========================================================
+   PAGE
+   ========================================================= */
+
+.page {
+  width: 100%;
+  max-width: none;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  margin-bottom: 28px;
+}
+
+.page-header h1 {
+  font-size: 26px;
+  letter-spacing: -0.01em;
+}
+
+.page-subtitle {
+  color: var(--color-text-muted);
+  font-size: 14.5px;
+  margin-top: 4px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 220px;
+}
+
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.toolbar select,
+.search-input,
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="datetime-local"],
+input[type="date"],
+select,
+textarea {
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-sm);
+
+  padding: 10px 12px;
+
+  font-size: 14px;
+
+  font-family: var(--font-body);
+
+  color: var(--color-text);
+
+  background: var(--color-surface);
+
+  width: 100%;
+
+  box-sizing: border-box;
+
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+
+  border-color: var(--color-primary);
+
+  box-shadow:
+    0 0 0 3px
+    var(--color-primary-focus, rgba(232, 73, 16, 0.16));
+}
+
+::placeholder {
+  color: var(--color-text-soft);
+  opacity: 1;
+}
+
+
+/* =========================================================
+   STAT GRID
+   ========================================================= */
+
+.stat-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(200px, 1fr));
+
+  gap: 16px;
+
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-md);
+
+  padding: 18px 20px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 8px;
+
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-card-accent {
+  border-color: var(--color-primary);
+  background: var(--color-primary-tint);
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+
+  font-size: 30px;
+
+  font-weight: 700;
+
+  color: var(--color-text);
+}
+
+.stat-value-sm {
+  font-size: 18px;
+}
+
+
+/* =========================================================
+   PANELS
+   ========================================================= */
+
+.panel {
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-md);
+
+  padding: 22px;
+
+  margin-bottom: 20px;
+
+  box-shadow: var(--shadow-sm);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 16px;
+
+  gap: 12px;
+}
+
+.panel-header h2 {
+  font-size: 17px;
+}
+
+.muted-note {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   MINI VEHICLE GRID
+   ========================================================= */
+
+.mini-vehicle-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(200px, 1fr));
+
+  gap: 12px;
+}
+
+.mini-vehicle-card {
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-sm);
+
+  padding: 10px;
+
+  background: var(--color-surface);
+}
+
+.mini-vehicle-thumb {
+  width: 44px;
+  height: 44px;
+
+  border-radius: var(--radius-sm);
+
+  background: var(--color-surface-alt);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  flex-shrink: 0;
+
+  font-size: 18px;
+}
+
+.mini-vehicle-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mini-vehicle-card strong {
+  display: block;
+  font-size: 13.5px;
+}
+
+.mini-vehicle-card small {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   DATA TABLE
+   ========================================================= */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table th {
+  text-align: left;
+
+  font-size: 12px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.03em;
+
+  color: var(--color-text-muted);
+
+  padding: 10px 12px;
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+.data-table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.table-subtext {
+  margin-top: 4px;
+
+  font-size: 12px;
+
+  color: var(--color-text-muted);
+}
+
+
+/* =========================================================
+   STATUS BADGES / CHIPS
+   ========================================================= */
+
+.status-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  padding: 4px 10px;
+
+  border-radius: 999px;
+
+  font-size: 12.5px;
+
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+}
+
+.chip {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 4px 10px;
+
+  border-radius: 999px;
+
+  font-size: 11.5px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.02em;
+
+  border: none;
+
+  cursor: default;
+}
+
+.chip-disponivel {
+  background: var(--status-disponivel-bg);
+  color: var(--status-disponivel);
+}
+
+.chip-em_uso {
+  background: var(--status-em_uso-bg);
+  color: var(--status-em_uso);
+}
+
+.chip-manutencao {
+  background: var(--status-manutencao-bg);
+  color: var(--status-manutencao);
+}
+
+.chip-inativo {
+  background: var(--status-inativo-bg);
+  color: var(--status-inativo);
+}
+
+.chip-toggle {
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   VEHICLE GRID
+   ========================================================= */
+
+.vehicle-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(240px, 1fr));
+
+  gap: 18px;
+}
+
+.vehicle-card {
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-md);
+
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  box-shadow: var(--shadow-sm);
+
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.vehicle-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.vehicle-card-thumb {
+  height: 120px;
+
+  background: var(--color-surface-alt);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 32px;
+
+  position: relative;
+}
+
+.vehicle-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vehicle-card-thumb .chip {
+  position: absolute;
+
+  top: 10px;
+  right: 10px;
+}
+
+.vehicle-card-body {
+  padding: 14px 16px 6px;
+}
+
+.vehicle-card-body h3 {
+  font-size: 15.5px;
+}
+
+.vehicle-plate {
+  font-family: var(--font-display);
+
+  font-size: 12.5px;
+
+  color: var(--color-text-muted);
+
+  letter-spacing: 0.05em;
+
+  margin-top: 2px;
+}
+
+.vehicle-meta {
+  display: flex;
+
+  gap: 6px;
+
+  flex-wrap: wrap;
+
+  color: var(--color-text-muted);
+
+  font-size: 12.5px;
+
+  margin-top: 8px;
+}
+
+.vehicle-card-actions {
+  display: flex;
+
+  gap: 8px;
+
+  padding: 12px 16px 16px;
+
+  margin-top: auto;
+
+  flex-wrap: wrap;
+}
+
+
+/* =========================================================
+   RESERVATION LIST
+   ========================================================= */
+
+.reservation-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 14px;
+}
+
+.reservation-card {
+  background: var(--color-surface);
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-md);
+
+  padding: 18px 20px;
+
+  box-shadow: var(--shadow-sm);
+}
+
+.reservation-card-main {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+.reservation-dates {
+  display: flex;
+
+  gap: 32px;
+
+  margin: 14px 0;
+
+  flex-wrap: wrap;
+}
+
+.reservation-dates div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.reservation-dates small {
+  color: var(--color-text-muted);
+
+  font-size: 11.5px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.03em;
+}
+
+.reservation-dates span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.reservation-motivo {
+  font-size: 14px;
+
+  color: var(--color-text);
+
+  margin-bottom: 8px;
+}
+
+.admin-note {
+  background: var(--color-surface-alt);
+
+  border-radius: var(--radius-sm);
+
+  padding: 10px 12px;
+
+  font-size: 13.5px;
+
+  margin-bottom: 10px;
+}
+
+.reservation-actions {
+  display: flex;
+
+  gap: 10px;
+
+  justify-content: flex-end;
+
+  flex-wrap: wrap;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+  text-align: center;
+
+  padding: 60px 20px;
+
+  color: var(--color-text-muted);
+}
+
+.empty-icon {
+  font-size: 34px;
+
+  margin-bottom: 10px;
+}
+
+.empty-state h3 {
+  color: var(--color-text);
+
+  font-size: 16px;
+
+  margin-bottom: 4px;
+}
+
+
+/* =========================================================
+   SKELETONS
+   ========================================================= */
+
+.skeleton-list,
+.skeleton-card {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-alt) 25%,
+    var(--color-border) 37%,
+    var(--color-surface-alt) 63%
+  );
+
+  background-size: 400% 100%;
+
+  animation: shimmer 1.4s ease infinite;
+
+  border-radius: var(--radius-md);
+}
+
+.skeleton-list {
+  height: 200px;
+}
+
+.skeleton-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(240px, 1fr));
+
+  gap: 18px;
+}
+
+.skeleton-card {
+  height: 210px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+.full-screen-loader {
+  min-height: 100vh;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+
+  border-radius: 50%;
+
+  border: 3px solid var(--color-border);
+
+  border-top-color: var(--color-primary);
+
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   FORMS
+   ========================================================= */
+
+.form-grid {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.field > span {
+  font-size: 13px;
+
+  font-weight: 600;
+
+  color: var(--color-text);
+}
+
+.field-row {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 14px;
+}
+
+.field-error {
+  color: var(--color-danger, #b7050f);
+
+  font-size: 12px;
+}
+
+.form-error {
+  background: var(--color-danger-bg, #fdecec);
+
+  color: var(--color-danger, #b7050f);
+
+  border-radius: var(--radius-sm);
+
+  padding: 10px 12px;
+
+  font-size: 13.5px;
+}
+
+.checkbox-field {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 14px;
+}
+
+.checkbox-field input {
+  width: auto;
+}
+
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  background: var(
+    --modal-overlay,
+    rgba(10, 18, 30, 0.62)
+  );
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  z-index: 50;
+}
+
+.modal-panel {
+  background: var(--color-surface);
+
+  border-radius: var(--radius-lg);
+
+  width: 100%;
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 18px 22px;
+
+  border-bottom: 1px solid var(--color-border);
+
+  position: sticky;
+
+  top: 0;
+
+  background: var(--color-surface);
+
+  z-index: 1;
+}
+
+.modal-header h3 {
+  font-size: 17px;
+}
+
+.modal-body {
+  padding: 22px;
+}
+
+.modal-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  margin-top: 6px;
+}
+
+
+/* =========================================================
+   PHOTO UPLOAD
+   ========================================================= */
+
+.photo-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fill, minmax(120px, 1fr));
+
+  gap: 10px;
+}
+
+.photo-item {
+  position: relative;
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-sm);
+
+  overflow: hidden;
+
+  display: flex;
+
+  flex-direction: column;
+
+  background: var(--color-surface);
+}
+
+.photo-item img {
+  width: 100%;
+
+  height: 90px;
+
+  object-fit: cover;
+}
+
+.photo-item select {
+  border: none;
+
+  border-top: 1px solid var(--color-border);
+
+  border-radius: 0;
+
+  font-size: 11.5px;
+
+  padding: 6px 8px;
+}
+
+.photo-remove {
+  position: absolute;
+
+  top: 4px;
+  right: 4px;
+
+  width: 20px;
+  height: 20px;
+
+  border-radius: 50%;
+
+  border: none;
+
+  background: var(
+    --photo-remove-bg,
+    rgba(183, 5, 15, 0.9)
+  );
+
+  color: #ffffff;
+
+  font-size: 11px;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-upload-tile {
+  border: 1.5px dashed var(--color-border);
+
+  border-radius: var(--radius-sm);
+
+  height: 90px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 2px;
+
+  cursor: pointer;
+
+  color: var(--color-text-muted);
+
+  align-self: flex-start;
+
+  width: 100%;
+
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.photo-upload-tile:hover {
+  border-color: var(--color-primary);
+
+  color: var(--color-primary);
+
+  background: var(--color-primary-tint);
+}
+
+.photo-upload-tile span {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.photo-upload-tile small {
+  font-size: 11px;
+}
+
+
+/* =========================================================
+   LOGIN SCREEN
+   ========================================================= */
+
+.login-screen {
+  min-height: 100vh;
+
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+}
+
+.login-side {
+  background: var(--sidebar-bg);
+
+  background-image:
+    radial-gradient(
+      circle at 20% 20%,
+      var(
+        --login-glow-primary,
+        rgba(0, 139, 210, 0.18)
+      ),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      var(
+        --login-glow-secondary,
+        rgba(232, 73, 16, 0.16)
+      ),
+      transparent 50%
+    );
+
+  color: var(--sidebar-text);
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 60px;
+}
+
+.login-side-content {
+  max-width: 380px;
+}
+
+.login-side-content h1 {
+  font-size: 32px;
+
+  margin: 20px 0 12px;
+}
+
+.login-side-content p {
+  color: var(--sidebar-text-muted);
+
+  font-size: 15px;
+
+  line-height: 1.5;
+}
+
+.login-form-wrap {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 40px;
+
+  background: var(--color-bg);
+}
+
+.login-form {
+  width: 100%;
+
+  max-width: 340px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 14px;
+}
+
+.login-form h2 {
+  font-size: 24px;
+}
+
+.login-subtitle {
+  color: var(--color-text-muted);
+
+  font-size: 14px;
+
+  margin-bottom: 8px;
+}
+
+
+/* =========================================================
+   ADMIN DASHBOARD
+   ========================================================= */
+
+.admin-dashboard-layout {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr) 360px;
+
+  gap: 24px;
+
+  align-items: stretch;
+}
+
+.admin-dashboard-layout > .panel {
+  width: 100%;
+
+  min-width: 0;
+
+  box-sizing: border-box;
+}
+
+.admin-stats {
+  width: 100%;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.admin-stats .stat-card {
+  width: 100%;
+
+  min-height: 130px;
+
+  box-sizing: border-box;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+}
+
+
+/* =========================================================
+   UPCOMING RESERVATIONS
+   ========================================================= */
+
+.admin-upcoming {
+  margin-bottom: 0;
+}
+
+.admin-upcoming .panel-header {
+  margin-bottom: 12px;
+}
+
+.upcoming-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+.upcoming-reservation {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+
+  padding-bottom: 12px;
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+.upcoming-reservation:last-child {
+  border-bottom: none;
+
+  padding-bottom: 0;
+}
+
+.upcoming-reservation strong {
+  font-family: var(--font-display);
+
+  font-size: 14px;
+}
+
+.upcoming-reservation span {
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.upcoming-reservation small {
+  color: var(--color-text-muted);
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   POWERED BY
+   ========================================================= */
+
+.powered-by {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 32px;
+
+  padding: 20px 24px;
+
+  border-top: 1px solid var(--color-border);
+
+  color: var(--color-text-muted);
+
+  font-size: 12px;
+
+  letter-spacing: 0.04em;
+}
+
+.powered-by span {
+  font-size: 11px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.12em;
+
+  font-weight: 600;
+
+  color: var(--color-text-soft);
+}
+
+.powered-by strong {
+  font-size: 13px;
+
+  font-weight: 700;
+
+  color: var(--color-text);
+
+  letter-spacing: 0.03em;
+}
+
+
+/* =========================================================
+   RESERVATION FORM
+   ========================================================= */
+
+.reservation-vehicle-info {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  padding: 14px 16px;
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface-alt);
+}
+
+.reservation-vehicle-info strong {
+  font-size: 15px;
+
+  font-weight: 600;
+}
+
+.reservation-vehicle-info span {
+  font-size: 13px;
+
+  color: var(--color-text-muted);
+}
+
+
+/* =========================================================
+   RESERVATION RULE
+   ========================================================= */
+
+.reservation-rule {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+
+  padding: 13px 15px;
+
+  border-left: 3px solid var(--color-primary);
+
+  background: var(--color-surface-alt);
+
+  border-radius: 0 8px 8px 0;
+}
+
+.reservation-rule strong {
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.reservation-rule span {
+  font-size: 12px;
+
+  line-height: 1.5;
+
+  color: var(--color-text-muted);
+}
+
+
+/* =========================================================
+   RESERVATION PERIOD
+   ========================================================= */
+
+.reservation-period {
+  padding: 16px;
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface);
+}
+
+.reservation-period-header {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 15px;
+}
+
+.reservation-period-header > div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.reservation-period-header strong {
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+.reservation-period-header small {
+  font-size: 12px;
+
+  color: var(--color-text-muted);
+}
+
+.reservation-period-number {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 28px;
+  height: 28px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: var(--color-primary);
+
+  color: #ffffff;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.reservation-period .field-row {
+  display: grid;
+
+  grid-template-columns: 1.4fr 1fr;
+
+  gap: 12px;
+}
+
+.reservation-period input[type="date"],
+.reservation-period select {
+  width: 100%;
+
+  min-height: 42px;
+
+  box-sizing: border-box;
+}
+
+.reservation-period input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.reservation-period input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.65;
+}
+
+.reservation-period input[type="date"]:focus::-webkit-calendar-picker-indicator {
+  opacity: 1;
+}
+
+.reservation-period input:focus,
+.reservation-period select:focus {
+  outline: none;
+}
+
+.reservation-period .field-error {
+  display: block;
+
+  margin-top: 5px;
+
+  line-height: 1.35;
+}
+
+
+/* =========================================================
+   THEME TOGGLE
+   ========================================================= */
+
+.theme-toggle {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--color-border);
+
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface);
+
+  color: var(--color-text);
+
+  font-size: 17px;
+
+  cursor: pointer;
+
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.theme-toggle:hover {
+  background: var(--color-surface-alt);
+
+  border-color: var(--color-border-strong);
+
+  transform: translateY(-1px);
+}
+
+.theme-toggle:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   RESPONSIVE — LOGIN
+   ========================================================= */
+
+@media (max-width: 960px) {
+  .login-screen {
+    grid-template-columns: 1fr;
+  }
+
+  .login-side {
+    display: none;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE — SIDEBAR
+   ========================================================= */
+
+@media (max-width: 860px) {
+  .sidebar {
+    position: fixed;
+
+    left: calc(-1 * var(--sidebar-width));
+
+    top: 0;
+
+    z-index: 40;
+
+    transition: left 0.2s ease;
+  }
+
+  .sidebar-open {
+    left: 0;
+  }
+
+  .topbar {
+    display: flex;
+  }
+
+  .mobile-menu-btn {
+    display: inline-flex;
+  }
+
+  .sidebar-scrim {
+    display: block;
+
+    position: fixed;
+
+    inset: 0;
+
+    background: var(
+      --sidebar-scrim,
+      rgba(10, 18, 30, 0.5)
+    );
+
+    z-index: 30;
+  }
+
+  .app-content {
+    padding: 24px 18px 50px;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE — ADMIN
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .admin-dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stats {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .reservation-period {
+    padding: 14px;
+  }
+
+  .reservation-period .field-row {
+    grid-template-columns: 1fr;
+
+    gap: 12px;
+  }
+
+  .reservation-period-header {
+    margin-bottom: 13px;
+  }
+
+  .page-header {
+    flex-direction: column;
+  }
+
+  .app-content {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+/* =========================================================
+   RESPONSIVE — VEÍCULOS / MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+  /* -----------------------------------------
+     Cabeçalho da página
+     ----------------------------------------- */
+
+  .page-header {
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .page-header h1 {
+    font-size: 23px;
+  }
+
+  .page-subtitle {
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+
+  .page-header .btn {
+    width: 100%;
+  }
+
+
+  /* -----------------------------------------
+     Barra de busca e filtros
+     ----------------------------------------- */
+
+  .toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .toolbar .search-input,
+  .toolbar select {
+    width: 100%;
+    min-width: 0;
+  }
+
+
+  /* -----------------------------------------
+     Grade de veículos
+     ----------------------------------------- */
+
+  .vehicle-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+
+  /* -----------------------------------------
+     Card do veículo
+     ----------------------------------------- */
+
+  .vehicle-card {
+    width: 100%;
+  }
+
+  .vehicle-card-thumb {
+    height: 150px;
+  }
+
+  .vehicle-card-body {
+    padding: 14px 15px 8px;
+  }
+
+  .vehicle-card-body h3 {
+    font-size: 16px;
+    line-height: 1.3;
+  }
+
+  .vehicle-meta {
+    gap: 5px;
+    line-height: 1.5;
+  }
+
+
+  /* -----------------------------------------
+     Botões do veículo
+     ----------------------------------------- */
+
+  .vehicle-card-actions {
+    padding: 12px 15px 15px;
+    gap: 8px;
+  }
+
+  .vehicle-card-actions .btn {
+    flex: 1;
+    min-width: 90px;
+  }
+}
+
+
+/* =========================================================
+   RESPONSIVE — CELULARES PEQUENOS
+   ========================================================= */
+
+@media (max-width: 430px) {
+
+  .app-content {
+    padding: 20px 12px 40px;
+  }
+
+  .page-header h1 {
+    font-size: 21px;
+  }
+
+  .vehicle-card-thumb {
+    height: 135px;
+  }
+
+  .vehicle-card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .vehicle-card-actions .btn {
+    width: 100%;
+  }
+
+  /*
+   * Quando existem três botões:
+   *
+   * Reservar | Editar
+   * Remover
+   *
+   * Evita que tudo fique espremido.
+   */
+  .vehicle-card-actions .btn:last-child:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* =========================================================
+   TERMO DE RESPONSABILIDADE
+   ========================================================= */
+
+.termo-status-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  padding: 20px 22px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+}
+
+.termo-status-card.termo-ok {
+  border-color: var(--status-aprovado);
+  background: var(--status-aprovado-bg);
+}
+
+.termo-status-card.termo-pendente {
+  border-color: var(--status-pendente);
+  background: var(--status-pendente-bg);
+}
+
+.termo-status-card.termo-alerta {
+  border-color: var(--status-rejeitado);
+  background: var(--status-rejeitado-bg);
+}
+
+.termo-status-main h3 {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.termo-status-main p {
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+}
+
+.termo-status-days {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.termo-status-days small {
+  display: block;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.termo-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--status-pendente);
+  background: var(--status-pendente-bg);
+  color: var(--color-text);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
