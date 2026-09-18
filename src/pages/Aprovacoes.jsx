@@ -76,6 +76,13 @@ export default function Aprovacoes() {
                 </div>
               </div>
 
+              {r.pernoite && (
+                <p className="muted-note">
+                  Pernoite: SIM
+                  {r.unidade_pernoite ? ` · ${r.unidade_pernoite}` : ''}
+                </p>
+              )}
+
               <p className="reservation-motivo">
                 <strong>Motivo:</strong> {r.motivo}
               </p>

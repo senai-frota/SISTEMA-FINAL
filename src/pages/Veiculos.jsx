@@ -15,7 +15,12 @@ const STATUS_LABELS = {
 }
 
 export default function Veiculos() {
-  const { isAdmin } = useAuth()
+  const { isAdmin, user } = useAuth()
+
+  const cnh = user?.cnh
+  const termo = user?.termo
+  const cnhBloqueada = cnh ? !cnh.pode_reservar : true
+  const contaBloqueada = !user?.is_active || (termo ? !termo.pode_reservar : true)
 
   const [veiculos, setVeiculos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -105,6 +110,25 @@ export default function Veiculos() {
         )}
       </div>
 
+      {!isAdmin && contaBloqueada && (
+        <div className="admin-note form-error">
+          <strong>Conta / Termo:</strong>{' '}
+          {termo?.mensagem || 'Conta inativa ou sem termo válido.'}{' '}
+          <a className="link" href="/meu-termo">
+            Renovar termo
+          </a>
+        </div>
+      )}
+
+      {!isAdmin && cnh && (cnhBloqueada || cnh.proxima_do_vencimento) && (
+        <div className={`admin-note ${cnhBloqueada ? 'form-error' : ''}`}>
+          <strong>CNH:</strong> {cnh.mensagem}{' '}
+          <a className="link" href="/minha-cnh">
+            Gerenciar CNH
+          </a>
+        </div>
+      )}
+
       <div className="toolbar">
         <input
           className="search-input"
@@ -193,6 +217,20 @@ export default function Veiculos() {
                   <span>
                     {v.capacidade} lugares
                   </span>
+                  {typeof v.km_atual === 'number' && (
+                    <>
+                      <span>•</span>
+                      <span>{v.km_atual.toLocaleString('pt-BR')} km</span>
+                    </>
+                  )}
+                  {v.data_ultima_manutencao && (
+                    <>
+                      <span>•</span>
+                      <span>
+                        Manut. {new Date(v.data_ultima_manutencao).toLocaleDateString('pt-BR')}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -252,6 +290,10 @@ export default function Veiculos() {
       {reservando && (
         <ReservationFormModal
           veiculo={reservando}
+          cnhBloqueada={cnhBloqueada}
+          cnhMensagem={cnh?.mensagem}
+          contaBloqueada={contaBloqueada}
+          contaMensagem={termo?.mensagem}
           onClose={() =>
             setReservando(null)
           }

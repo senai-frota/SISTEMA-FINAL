@@ -98,7 +98,7 @@ export default function TermosAdmin() {
               </div>
 
               <button type="button" className="link" onClick={() => abrirPdf(t)}>
-                Ver documento gerado (PDF)
+                Ver documento assinado
               </button>
 
               <label className="field">

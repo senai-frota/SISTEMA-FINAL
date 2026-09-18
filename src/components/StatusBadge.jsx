@@ -5,10 +5,15 @@ const LABELS = {
   inativo: 'Inativo',
   pendente: 'Pendente',
   aprovada: 'Aprovada',
-  negada: 'Negada',
+  aprovado: 'Aprovado',
+  negada: 'Rejeitada',
+  rejeitada: 'Rejeitada',
   em_andamento: 'Em andamento',
   concluida: 'Concluída',
   cancelada: 'Cancelada',
+  sem_cnh: 'Sem CNH',
+  proxima_vencimento: 'Próxima do vencimento',
+  vencida: 'Vencida',
 }
 
 export default function StatusBadge({ status }) {

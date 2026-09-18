@@ -10,6 +10,8 @@ export default function AdminDashboard() {
 
   const [reservas, setReservas] = useState([])
   const [veiculos, setVeiculos] = useState([])
+  const [cnhAlertas, setCnhAlertas] = useState({ pendentes: 0, vencimento: 0, vencidas: 0 })
+  const [termoAlertas, setTermoAlertas] = useState({ pendentes: 0, inativos: 0 })
   const [loading, setLoading] = useState(true)
   const [processando, setProcessando] = useState(null)
   const [observacoes, setObservacoes] = useState({})
@@ -23,11 +25,14 @@ export default function AdminDashboard() {
     setLoading(true)
 
     try {
-      const [reservasRes, veiculosRes] = await Promise.all([
+      const [reservasRes, veiculosRes, usuariosRes, cnhPendRes, termoPendRes] = await Promise.all([
         api.get('/reservas/', {
           params: { status: 'pendente' },
         }),
         api.get('/veiculos/'),
+        api.get('/usuarios/'),
+        api.get('/usuarios/cnh/', { params: { status: 'pendente' } }),
+        api.get('/termos/', { params: { status: 'pendente' } }),
       ])
 
       setReservas(
@@ -37,6 +42,19 @@ export default function AdminDashboard() {
       setVeiculos(
         veiculosRes.data.results ?? veiculosRes.data
       )
+
+      const listaUsuarios = usuariosRes.data.results ?? usuariosRes.data
+      const pendentesCnh = cnhPendRes.data.results ?? cnhPendRes.data
+      const pendentesTermo = termoPendRes.data.results ?? termoPendRes.data
+      setCnhAlertas({
+        pendentes: pendentesCnh.length,
+        vencimento: listaUsuarios.filter((u) => u.cnh?.situacao === 'proxima_vencimento').length,
+        vencidas: listaUsuarios.filter((u) => u.cnh?.situacao === 'vencida').length,
+      })
+      setTermoAlertas({
+        pendentes: pendentesTermo.length,
+        inativos: listaUsuarios.filter((u) => !u.is_active && !u.is_admin).length,
+      })
     } finally {
       setLoading(false)
     }
@@ -216,6 +234,13 @@ export default function AdminDashboard() {
 
                     </div>
 
+                    {r.pernoite && (
+                      <p className="muted-note">
+                        Pernoite: SIM
+                        {r.unidade_pernoite ? ` · ${r.unidade_pernoite}` : ''}
+                      </p>
+                    )}
+
                     <p className="reservation-motivo">
                       <strong>Motivo:</strong>{' '}
                       {r.motivo}
@@ -384,6 +409,31 @@ export default function AdminDashboard() {
                 ? '—'
                 : totalVeiculos}
             </span>
+          </div>
+
+          <div className="stat-card">
+            <span className="stat-label">CNH pendentes</span>
+            <span className="stat-value">{loading ? '—' : cnhAlertas.pendentes}</span>
+          </div>
+
+          <div className="stat-card">
+            <span className="stat-label">CNH próximas do vencimento</span>
+            <span className="stat-value">{loading ? '—' : cnhAlertas.vencimento}</span>
+          </div>
+
+          <div className="stat-card">
+            <span className="stat-label">CNH vencidas</span>
+            <span className="stat-value">{loading ? '—' : cnhAlertas.vencidas}</span>
+          </div>
+
+          <div className="stat-card">
+            <span className="stat-label">Termos pendentes</span>
+            <span className="stat-value">{loading ? '—' : termoAlertas.pendentes}</span>
+          </div>
+
+          <div className="stat-card">
+            <span className="stat-label">Contas inativas</span>
+            <span className="stat-value">{loading ? '—' : termoAlertas.inativos}</span>
           </div>
 
         </div>

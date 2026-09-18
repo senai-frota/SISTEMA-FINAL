@@ -52,13 +52,16 @@ export default function Usuarios() {
     setRemovendo(true)
 
     try {
-      await api.delete(
-        `/usuarios/${usuarioParaRemover.id}/`
-      )
-
+      await api.delete(`/usuarios/${usuarioParaRemover.id}/`)
       setUsuarioParaRemover(null)
-
       await load()
+    } catch (err) {
+      const data = err.response?.data
+      const msg =
+        (typeof data?.detail === 'string' && data.detail) ||
+        data?.non_field_errors?.[0] ||
+        'Não foi possível remover o usuário. Tente novamente.'
+      alert(msg)
     } finally {
       setRemovendo(false)
     }
@@ -94,53 +97,148 @@ export default function Usuarios() {
           title="Nenhum usuário cadastrado"
         />
       ) : (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Matrícula</th>
-              <th>Setor</th>
-              <th>Perfil</th>
-              <th>Status</th>
-              <th></th>
-            </tr>
-          </thead>
+        <>
+          <div className="table-desktop-only table-scroll">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Matrícula</th>
+                  <th>Setor</th>
+                  <th>Perfil</th>
+                  <th>CNH</th>
+                  <th>Validade CNH</th>
+                  <th>Termo / Conta</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {usuarios.map((u) => (
+                  <tr key={u.id}>
+                    <td>{u.nome}</td>
+                    <td>{u.matricula}</td>
+                    <td>{u.setor || '—'}</td>
+                    <td>{u.is_admin ? 'Administrador' : 'Funcionário'}</td>
+                    <td>
+                      <span
+                        className={`chip ${
+                          u.cnh?.situacao === 'aprovada'
+                            ? 'chip-disponivel'
+                            : u.cnh?.situacao === 'proxima_vencimento'
+                              ? 'chip-manutencao'
+                              : 'chip-inativo'
+                        }`}
+                      >
+                        {u.cnh?.situacao === 'proxima_vencimento'
+                          ? 'Próx. vencimento'
+                          : u.cnh?.situacao === 'pendente'
+                            ? 'Pendente'
+                            : u.cnh?.situacao === 'aprovada'
+                              ? 'Aprovada'
+                              : u.cnh?.situacao === 'vencida'
+                                ? 'Vencida'
+                                : u.cnh?.situacao === 'rejeitada'
+                                  ? 'Rejeitada'
+                                  : 'Sem CNH'}
+                      </span>
+                    </td>
+                    <td>
+                      {u.cnh?.data_validade
+                        ? new Date(u.cnh.data_validade).toLocaleDateString('pt-BR')
+                        : '—'}
+                    </td>
+                    <td>
+                      <span className={`chip ${u.is_active ? 'chip-disponivel' : 'chip-inativo'}`}>
+                        {u.is_active ? 'Ativa' : 'Inativa'}
+                      </span>
+                      <br />
+                      <small className="muted-note">
+                        {u.termo?.situacao === 'valido'
+                          ? 'Termo válido'
+                          : u.termo?.situacao === 'pendente'
+                            ? 'Termo pendente'
+                            : u.termo?.situacao === 'vencido'
+                              ? 'Termo vencido'
+                              : u.termo?.situacao === 'rejeitado'
+                                ? 'Termo rejeitado'
+                                : 'Sem termo'}
+                      </small>
+                    </td>
+                    <td>
+                      <button
+                        className={`chip chip-toggle ${
+                          u.is_active ? 'chip-disponivel' : 'chip-inativo'
+                        }`}
+                        onClick={() => handleToggleAtivo(u)}
+                        type="button"
+                      >
+                        {u.is_active ? 'Ativo' : 'Inativo'}
+                      </button>
+                    </td>
+                    <td className="table-actions">
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        type="button"
+                        onClick={() => {
+                          setEditing(u)
+                          setShowForm(true)
+                        }}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="btn btn-ghost-danger btn-sm"
+                        type="button"
+                        onClick={() => abrirConfirmacaoRemocao(u)}
+                      >
+                        Remover
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          <tbody>
+          <div className="mobile-card-list">
             {usuarios.map((u) => (
-              <tr key={u.id}>
-                <td>{u.nome}</td>
-
-                <td>{u.matricula}</td>
-
-                <td>{u.setor || '—'}</td>
-
-                <td>
-                  {u.is_admin
-                    ? 'Administrador'
-                    : 'Funcionário'}
-                </td>
-
-                <td>
+              <article key={u.id} className="mobile-entity-card">
+                <div className="mobile-entity-card-head">
+                  <div>
+                    <strong>{u.nome}</strong>
+                    <p className="muted-note">
+                      Matrícula {u.matricula}
+                      {u.setor ? ` · ${u.setor}` : ''}
+                    </p>
+                  </div>
+                  <span className={`chip ${u.is_active ? 'chip-disponivel' : 'chip-inativo'}`}>
+                    {u.is_active ? 'Ativo' : 'Inativo'}
+                  </span>
+                </div>
+                <p className="muted-note">
+                  {u.is_admin ? 'Administrador' : 'Funcionário'}
+                  {' · '}
+                  CNH:{' '}
+                  {u.cnh?.situacao === 'aprovada'
+                    ? 'Aprovada'
+                    : u.cnh?.situacao === 'pendente'
+                      ? 'Pendente'
+                      : u.cnh?.situacao || 'Sem CNH'}
+                  {' · '}
+                  {u.termo?.situacao === 'valido' ? 'Termo válido' : 'Termo pendente/vencido'}
+                </p>
+                <div className="reservation-actions">
                   <button
-                    className={`chip chip-toggle ${
-                      u.is_active
-                        ? 'chip-disponivel'
-                        : 'chip-inativo'
-                    }`}
-                    onClick={() =>
-                      handleToggleAtivo(u)
-                    }
+                    className="btn btn-ghost btn-touch"
+                    type="button"
+                    onClick={() => handleToggleAtivo(u)}
                   >
-                    {u.is_active
-                      ? 'Ativo'
-                      : 'Inativo'}
+                    {u.is_active ? 'Desativar' : 'Ativar'}
                   </button>
-                </td>
-
-                <td className="table-actions">
                   <button
-                    className="btn btn-ghost btn-sm"
+                    className="btn btn-ghost btn-touch"
+                    type="button"
                     onClick={() => {
                       setEditing(u)
                       setShowForm(true)
@@ -148,20 +246,18 @@ export default function Usuarios() {
                   >
                     Editar
                   </button>
-
                   <button
-                    className="btn btn-ghost-danger btn-sm"
-                    onClick={() =>
-                      abrirConfirmacaoRemocao(u)
-                    }
+                    className="btn btn-ghost-danger btn-touch"
+                    type="button"
+                    onClick={() => abrirConfirmacaoRemocao(u)}
                   >
                     Remover
                   </button>
-                </td>
-              </tr>
+                </div>
+              </article>
             ))}
-          </tbody>
-        </table>
+          </div>
+        </>
       )}
 
       {showForm && (
@@ -212,7 +308,8 @@ export default function Usuarios() {
             </div>
 
             <p className="muted-note">
-              Esta ação não poderá ser desfeita.
+              A conta será desativada (exclusão lógica). O histórico de
+              reservas, termos e documentos permanece preservado.
             </p>
 
             <div className="modal-actions">

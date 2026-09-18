@@ -55,6 +55,25 @@ export default function Dashboard() {
         </Link>
       </div>
 
+      {(!user?.is_active || (user?.termo && !user.termo.pode_reservar)) && (
+        <div className="admin-note form-error">
+          <strong>Conta / Termo:</strong>{' '}
+          {user?.termo?.mensagem || 'Sua conta está inativa. Renove o termo de responsabilidade.'}{' '}
+          <Link className="link" to="/meu-termo">
+            Ir para Meu termo
+          </Link>
+        </div>
+      )}
+
+      {user?.cnh && (!user.cnh.pode_reservar || user.cnh.proxima_do_vencimento) && (
+        <div className={`admin-note ${!user.cnh.pode_reservar ? 'form-error' : ''}`}>
+          <strong>CNH:</strong> {user.cnh.mensagem}{' '}
+          <Link className="link" to="/minha-cnh">
+            Ir para Minha CNH
+          </Link>
+        </div>
+      )}
+
       <div className="stat-grid">
         <div className="stat-card">
           <span className="stat-label">Veículos disponíveis</span>
@@ -120,28 +139,45 @@ export default function Dashboard() {
         ) : reservas.length === 0 ? (
           <p className="muted-note">Nenhuma reserva registrada ainda.</p>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Veículo</th>
-                <th>Retirada</th>
-                <th>Devolução</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            <div className="table-desktop-only table-scroll">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Veículo</th>
+                    <th>Retirada</th>
+                    <th>Devolução</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reservas.slice(0, 5).map((r) => (
+                    <tr key={r.id}>
+                      <td>{r.veiculo_info || `Veículo #${r.veiculo}`}</td>
+                      <td>{formatDateTime(r.data_inicio)}</td>
+                      <td>{formatDateTime(r.data_fim)}</td>
+                      <td>
+                        <StatusBadge status={r.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mobile-card-list">
               {reservas.slice(0, 5).map((r) => (
-                <tr key={r.id}>
-                  <td>{r.veiculo_info || `Veículo #${r.veiculo}`}</td>
-                  <td>{formatDateTime(r.data_inicio)}</td>
-                  <td>{formatDateTime(r.data_fim)}</td>
-                  <td>
+                <article key={r.id} className="mobile-entity-card">
+                  <div className="mobile-entity-card-head">
+                    <strong>{r.veiculo_info || `Veículo #${r.veiculo}`}</strong>
                     <StatusBadge status={r.status} />
-                  </td>
-                </tr>
+                  </div>
+                  <p className="muted-note">
+                    {formatDateTime(r.data_inicio)} → {formatDateTime(r.data_fim)}
+                  </p>
+                </article>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
     </div>
