@@ -4,8 +4,11 @@ import { useAuth } from '../context/AuthContext'
 import EmptyState from '../components/EmptyState'
 import VehicleFormModal from '../components/VehicleFormModal'
 import ReservationFormModal from '../components/ReservationFormModal'
-import Modal from '../components/Modal'
-import { COMBUSTIVEL_LABELS } from '../utils/format'
+import ConfirmDialog from '../components/ConfirmDialog'
+import VehicleImageModal from '../components/VehicleImageModal'
+import VehiclePlaceholder from '../components/VehiclePlaceholder'
+import { useFeedback } from '../context/FeedbackContext'
+import { COMBUSTIVEL_LABELS, formatDate } from '../utils/format'
 
 const STATUS_LABELS = {
   disponivel: 'Disponível',
@@ -16,6 +19,7 @@ const STATUS_LABELS = {
 
 export default function Veiculos() {
   const { isAdmin, user } = useAuth()
+  const feedback = useFeedback()
 
   const cnh = user?.cnh
   const termo = user?.termo
@@ -32,6 +36,8 @@ export default function Veiculos() {
 
   const [veiculoParaRemover, setVeiculoParaRemover] = useState(null)
   const [removendo, setRemovendo] = useState(false)
+  const [mostrarInativos, setMostrarInativos] = useState(false)
+  const [veiculoImagem, setVeiculoImagem] = useState(null)
 
   async function load() {
     setLoading(true)
@@ -41,6 +47,7 @@ export default function Veiculos() {
 
       if (search) params.search = search
       if (statusFiltro) params.status = statusFiltro
+      if (isAdmin && mostrarInativos) params.incluir_inativos = true
 
       const { data } = await api.get('/veiculos/', { params })
 
@@ -56,7 +63,7 @@ export default function Veiculos() {
     return () => clearTimeout(t)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, statusFiltro])
+  }, [search, statusFiltro, mostrarInativos, isAdmin])
 
   function abrirConfirmacaoRemocao(veiculo) {
     setVeiculoParaRemover(veiculo)
@@ -78,9 +85,17 @@ export default function Veiculos() {
         `/veiculos/${veiculoParaRemover.id}/`
       )
 
+      feedback.sucesso(`Veículo ${veiculoParaRemover.placa} removido.`)
       setVeiculoParaRemover(null)
 
       await load()
+    } catch (err) {
+      const data = err.response?.data
+      feedback.erro(
+        (typeof data?.detail === 'string' && data.detail) ||
+          data?.non_field_errors?.[0] ||
+          'Não foi possível remover o veículo. Tente novamente.'
+      )
     } finally {
       setRemovendo(false)
     }
@@ -89,13 +104,7 @@ export default function Veiculos() {
   return (
     <div className="page">
       <div className="page-header">
-        <div>
-          <h1>Veículos</h1>
-
-          <p className="page-subtitle">
-            Consulte a frota e solicite a reserva de um veículo.
-          </p>
-        </div>
+        <h1>Veículos</h1>
 
         {isAdmin && (
           <button
@@ -143,14 +152,25 @@ export default function Veiculos() {
         >
           <option value="">Todos os status</option>
 
-          {Object.entries(STATUS_LABELS).map(
-            ([value, label]) => (
+          {Object.entries(STATUS_LABELS)
+            .filter(([value]) => isAdmin || value !== 'inativo')
+            .map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>
-            )
-          )}
+            ))}
         </select>
+
+        {isAdmin && (
+          <label className="checkbox-field">
+            <input
+              type="checkbox"
+              checked={mostrarInativos}
+              onChange={(e) => setMostrarInativos(e.target.checked)}
+            />
+            <span>Mostrar inativos</span>
+          </label>
+        )}
       </div>
 
       {loading ? (
@@ -163,11 +183,7 @@ export default function Veiculos() {
           ))}
         </div>
       ) : veiculos.length === 0 ? (
-        <EmptyState
-          icon="▣"
-          title="Nenhum veículo encontrado"
-          description="Ajuste os filtros ou cadastre um novo veículo."
-        />
+        <EmptyState icon="▣" title="Nenhum veículo encontrado" />
       ) : (
         <div className="vehicle-grid">
           {veiculos.map((v) => (
@@ -179,10 +195,10 @@ export default function Veiculos() {
                 {v.foto_url ? (
                   <img
                     src={v.foto_url}
-                    alt={v.modelo}
+                    alt={`${v.marca} ${v.modelo}`}
                   />
                 ) : (
-                  <span>▣</span>
+                  <VehiclePlaceholder />
                 )}
 
                 <span
@@ -227,7 +243,7 @@ export default function Veiculos() {
                     <>
                       <span>•</span>
                       <span>
-                        Manut. {new Date(v.data_ultima_manutencao).toLocaleDateString('pt-BR')}
+                        Manut. {formatDate(v.data_ultima_manutencao)}
                       </span>
                     </>
                   )}
@@ -235,7 +251,7 @@ export default function Veiculos() {
               </div>
 
               <div className="vehicle-card-actions">
-                {v.status === 'disponivel' && (
+                {!isAdmin && v.status === 'disponivel' && (
                   <button
                     className="btn btn-primary btn-sm"
                     onClick={() =>
@@ -256,6 +272,13 @@ export default function Veiculos() {
                       }}
                     >
                       Editar
+                    </button>
+
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setVeiculoImagem(v)}
+                    >
+                      Imagem
                     </button>
 
                     <button
@@ -287,7 +310,20 @@ export default function Veiculos() {
         />
       )}
 
-      {reservando && (
+      {isAdmin && veiculoImagem && (
+        <VehicleImageModal
+          veiculo={veiculoImagem}
+          onClose={() => setVeiculoImagem(null)}
+          onUpdated={(atualizado) => {
+            setVeiculos((lista) =>
+              lista.map((item) => (item.id === atualizado.id ? atualizado : item))
+            )
+            setVeiculoImagem(null)
+          }}
+        />
+      )}
+
+      {!isAdmin && reservando && (
         <ReservationFormModal
           veiculo={reservando}
           cnhBloqueada={cnhBloqueada}
@@ -304,56 +340,29 @@ export default function Veiculos() {
       )}
 
       {veiculoParaRemover && (
-        <Modal
+        <ConfirmDialog
           title="Remover veículo"
-          onClose={fecharConfirmacaoRemocao}
-          width={500}
+          message="O veículo será inativado e deixará de aparecer na frota."
+          confirmLabel="Remover"
+          loadingLabel="Removendo…"
+          tone="danger"
+          loading={removendo}
+          onConfirm={handleDelete}
+          onCancel={fecharConfirmacaoRemocao}
         >
-          <div className="form-grid">
-            <p>
-              Tem certeza que deseja remover este veículo?
-            </p>
+          <div className="admin-note">
+            <strong>
+              {veiculoParaRemover.marca}{' '}
+              {veiculoParaRemover.modelo}
+            </strong>
 
-            <div className="admin-note">
-              <strong>
-                {veiculoParaRemover.marca}{' '}
-                {veiculoParaRemover.modelo}
-              </strong>
+            <br />
 
-              <br />
-
-              <span>
-                Placa: {veiculoParaRemover.placa}
-              </span>
-            </div>
-
-            <p className="muted-note">
-              Esta ação não poderá ser desfeita.
-            </p>
-
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={fecharConfirmacaoRemocao}
-                disabled={removendo}
-              >
-                Cancelar
-              </button>
-
-              <button
-                type="button"
-                className="btn btn-ghost-danger"
-                onClick={handleDelete}
-                disabled={removendo}
-              >
-                {removendo
-                  ? 'Removendo…'
-                  : 'Remover veículo'}
-              </button>
-            </div>
+            <span>
+              Placa: {veiculoParaRemover.placa}
+            </span>
           </div>
-        </Modal>
+        </ConfirmDialog>
       )}
     </div>
   )

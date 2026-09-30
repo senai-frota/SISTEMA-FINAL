@@ -46,12 +46,9 @@ export default function Dashboard() {
   return (
     <div className="page">
       <div className="page-header">
-        <div>
-          <h1>Olá, {user?.nome?.split(' ')[0]}</h1>
-          <p className="page-subtitle">Aqui está o resumo da frota hoje.</p>
-        </div>
+        <h1>Olá, {user?.nome?.split(' ')[0]}</h1>
         <Link className="btn btn-primary" to="/veiculos">
-          Nova solicitação
+          Reservar veículo
         </Link>
       </div>
 
@@ -60,7 +57,7 @@ export default function Dashboard() {
           <strong>Conta / Termo:</strong>{' '}
           {user?.termo?.mensagem || 'Sua conta está inativa. Renove o termo de responsabilidade.'}{' '}
           <Link className="link" to="/meu-termo">
-            Ir para Meu termo
+            Renovar termo
           </Link>
         </div>
       )}
@@ -69,18 +66,14 @@ export default function Dashboard() {
         <div className={`admin-note ${!user.cnh.pode_reservar ? 'form-error' : ''}`}>
           <strong>CNH:</strong> {user.cnh.mensagem}{' '}
           <Link className="link" to="/minha-cnh">
-            Ir para Minha CNH
+            Gerenciar CNH
           </Link>
         </div>
       )}
 
       <div className="stat-grid">
         <div className="stat-card">
-          <span className="stat-label">Veículos disponíveis</span>
-          <span className="stat-value">{loading ? '—' : veiculos.length}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Minhas solicitações pendentes</span>
+          <span className="stat-label">Solicitações pendentes</span>
           <span className="stat-value">{loading ? '—' : pendentes}</span>
         </div>
         <div className="stat-card">
@@ -99,7 +92,10 @@ export default function Dashboard() {
 
       <div className="panel">
         <div className="panel-header">
-          <h2>Veículos disponíveis agora</h2>
+          <h2>
+            Veículos disponíveis
+            {!loading && <span className="page-count page-count-neutral">{veiculos.length}</span>}
+          </h2>
           <Link to="/veiculos" className="link">
             Ver todos
           </Link>
@@ -137,7 +133,7 @@ export default function Dashboard() {
         {loading ? (
           <div className="skeleton-list" />
         ) : reservas.length === 0 ? (
-          <p className="muted-note">Nenhuma reserva registrada ainda.</p>
+          <p className="muted-note">Nenhuma reserva ainda.</p>
         ) : (
           <>
             <div className="table-desktop-only table-scroll">

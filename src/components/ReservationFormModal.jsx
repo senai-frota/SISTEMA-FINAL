@@ -152,6 +152,12 @@ export default function ReservationFormModal({
         novosErros.hora_fim = ['O horário de fim deve ser depois do início.']
       }
     }
+    if (modalidade === 'turno' && form.data === formatDateInput(new Date())) {
+      const t = TURNOS.find((x) => x.value === form.turno)
+      if (t && new Date(montarISO(form.data, t.fim)) <= new Date()) {
+        novosErros.turno = ['Este turno já foi encerrado. Escolha outro turno ou data.']
+      }
+    }
     if (form.pernoite && modalidade === 'turno') {
       novosErros.pernoite = ['Pernoite só é permitido com horário personalizado.']
     }
@@ -219,14 +225,9 @@ export default function ReservationFormModal({
   return (
     <Modal title={`Reservar ${veiculo.marca} ${veiculo.modelo}`} onClose={onClose} width={560}>
       <form onSubmit={handleSubmit} className="form-grid">
-        <div className="reservation-vehicle-info">
-          <strong>
-            {veiculo.marca} {veiculo.modelo}
-          </strong>
-          <span>
-            Placa {veiculo.placa} · {veiculo.capacidade} lugares · {veiculo.cor}
-          </span>
-        </div>
+        <p className="muted-note">
+          Placa {veiculo.placa} · {veiculo.capacidade} lugares · {veiculo.cor}
+        </p>
 
         {contaBloqueada && (
           <div className="form-error">
@@ -239,11 +240,6 @@ export default function ReservationFormModal({
             {cnhMensagem || 'Envie/atualize sua CNH antes de solicitar uma reserva.'}
           </div>
         )}
-
-        <div className="reservation-rule">
-          <strong>Janela de agendamento</strong>
-          <span>Você pode reservar para datas de até 14 dias à frente (incluindo hoje).</span>
-        </div>
 
         <div className="field-row">
           <label className="field">
@@ -280,7 +276,11 @@ export default function ReservationFormModal({
               required
               disabled={bloqueada}
             />
-            {errors.data && <small className="field-error">{errors.data[0]}</small>}
+            {errors.data ? (
+              <small className="field-error">{errors.data[0]}</small>
+            ) : (
+              <small className="muted-note">Até 14 dias à frente, incluindo hoje.</small>
+            )}
           </label>
         </div>
 
@@ -323,7 +323,7 @@ export default function ReservationFormModal({
             </label>
 
             <label className="field">
-              <span>Unidade onde o veículo ficará durante o pernoite</span>
+              <span>Unidade do pernoite</span>
               <input
                 value={form.unidade_pernoite}
                 onChange={(e) => update('unidade_pernoite', e.target.value)}
@@ -352,6 +352,7 @@ export default function ReservationFormModal({
                 </option>
               ))}
             </select>
+            {errors.turno && <small className="field-error">{errors.turno[0]}</small>}
           </label>
         ) : (
           <div className="field-row">
@@ -395,31 +396,33 @@ export default function ReservationFormModal({
           </p>
         )}
 
-        <label className="field">
-          <span>Destino</span>
-          <input
-            value={form.destino}
-            onChange={(e) => update('destino', e.target.value)}
-            placeholder="Ex.: SENAI GAMA"
-            disabled={bloqueada}
-          />
-        </label>
+        <div className="field-row">
+          <label className="field">
+            <span>Destino</span>
+            <input
+              value={form.destino}
+              onChange={(e) => update('destino', e.target.value)}
+              placeholder="Ex.: SENAI GAMA"
+              disabled={bloqueada}
+            />
+          </label>
+
+          <label className="field">
+            <span>Passageiros</span>
+            <input
+              type="number"
+              min={1}
+              max={veiculo.capacidade}
+              value={form.passageiros}
+              onChange={(e) => update('passageiros', e.target.value)}
+              required
+              disabled={bloqueada}
+            />
+          </label>
+        </div>
 
         <label className="field">
-          <span>Passageiros</span>
-          <input
-            type="number"
-            min={1}
-            max={veiculo.capacidade}
-            value={form.passageiros}
-            onChange={(e) => update('passageiros', e.target.value)}
-            required
-            disabled={bloqueada}
-          />
-        </label>
-
-        <label className="field">
-          <span>Motivo da solicitação</span>
+          <span>Motivo</span>
           <textarea
             rows={3}
             value={form.motivo}

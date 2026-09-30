@@ -12,7 +12,8 @@ const NAV_ITEMS = [
   { to: '/usuarios', label: 'Usuários', icon: '◉', adminOnly: true },
   { to: '/cnh-pendentes', label: 'CNH pendentes', icon: '▤', adminOnly: true },
   { to: '/termos-pendentes', label: 'Termos pendentes', icon: '▤', adminOnly: true },
-  { to: '/relatorio-calendario', label: 'Relatório', icon: '▦', adminOnly: true },
+  { to: '/relatorios', label: 'Relatórios', icon: '▦', adminOnly: true },
+  { to: '/auditoria', label: 'Auditoria', icon: '▥', adminOnly: true },
 ]
 
 export default function Layout({ children }) {

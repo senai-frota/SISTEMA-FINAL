@@ -4,7 +4,6 @@ import Layout from './Layout'
 
 export default function ProtectedRoute({ children, adminOnly = false, allowPrimeiroAcesso = false }) {
   const { user, loading, isAdmin, precisaDefinirSenha } = useAuth()
-  const location = useLocation()
 
   if (loading) {
     return (
@@ -14,7 +13,7 @@ export default function ProtectedRoute({ children, adminOnly = false, allowPrime
     )
   }
 
-  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />
+  if (!user) return <Navigate to="/login" replace />
 
   if (precisaDefinirSenha && !allowPrimeiroAcesso) {
     return <Navigate to="/definir-senha" replace />

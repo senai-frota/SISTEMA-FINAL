@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 function mensagemErroLogin(err, primeiroAcesso) {
@@ -31,7 +31,6 @@ function mensagemErroLogin(err, primeiroAcesso) {
 export default function Login() {
   const { login, user, precisaDefinirSenha, loading: authLoading } = useAuth()
   const navigate = useNavigate()
-  const location = useLocation()
   const [matricula, setMatricula] = useState('')
   const [password, setPassword] = useState('')
   const [primeiroAcesso, setPrimeiroAcesso] = useState(false)
@@ -42,10 +41,8 @@ export default function Login() {
   // Redireciona só quando o usuário já está no contexto (evita race com ProtectedRoute).
   useEffect(() => {
     if (authLoading || !user) return
-    navigate(precisaDefinirSenha ? '/definir-senha' : (location.state?.from || '/'), {
-      replace: true,
-    })
-  }, [authLoading, user, precisaDefinirSenha, navigate, location.state])
+    navigate(precisaDefinirSenha ? '/definir-senha' : '/', { replace: true })
+  }, [authLoading, user, precisaDefinirSenha, navigate])
 
   async function handleSubmit(e) {
     e.preventDefault()

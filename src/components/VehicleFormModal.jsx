@@ -651,123 +651,123 @@ export default function VehicleFormModal({
         onSubmit={handleSubmit}
         className="form-grid"
       >
-        {/* PLACA */}
+        {/* PLACA + STATUS */}
 
-        <label className="field">
-          <span>Placa</span>
+        <div className="field-row">
+          <label className="field">
+            <span>Placa</span>
 
-          <input
-            value={form.placa}
-            onChange={
-              handlePlacaChange
-            }
-            placeholder="ABC-1234 ou ABC1D23"
-            maxLength={8}
-            required
-            autoComplete="off"
-          />
-
-          <small className="muted-note">
-            Formatos aceitos:
-            ABC-1234 ou ABC1D23
-          </small>
-
-          {errors.placa && (
-            <small className="field-error">
-              {Array.isArray(
-                errors.placa
-              )
-                ? errors.placa[0]
-                : errors.placa}
-            </small>
-          )}
-        </label>
-
-        {/* MARCA */}
-
-        <label className="field">
-          <span>Marca</span>
-
-          {isEdit ? (
             <input
-              value={form.marca}
-              onChange={(e) => update('marca', e.target.value)}
+              value={form.placa}
+              onChange={handlePlacaChange}
+              placeholder="ABC-1234 ou ABC1D23"
+              maxLength={8}
               required
+              autoComplete="off"
             />
-          ) : (
-            <select
-              value={codigoMarca}
-              onChange={handleMarcaChange}
-              disabled={loadingMarcas}
-              required
-            >
-              <option value="">
-                {loadingMarcas
-                  ? 'Carregando marcas…'
-                  : 'Selecione uma marca'}
-              </option>
 
-              {marcas.map((marca) => (
-                <option
-                  key={marca.codigo}
-                  value={marca.codigo}
-                >
-                  {marca.nome}
+            {errors.placa && (
+              <small className="field-error">
+                {Array.isArray(errors.placa) ? errors.placa[0] : errors.placa}
+              </small>
+            )}
+          </label>
+
+          <label className="field">
+            <span>Status</span>
+
+            <select
+              value={form.status}
+              onChange={(e) => update('status', e.target.value)}
+            >
+              {STATUS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
                 </option>
               ))}
             </select>
-          )}
+          </label>
+        </div>
 
-          {errors.marca && (
-            <small className="field-error">
-              {Array.isArray(errors.marca) ? errors.marca[0] : errors.marca}
-            </small>
-          )}
-        </label>
+        {/* MARCA + MODELO */}
 
-        {/* MODELO */}
+        <div className="field-row">
+          <label className="field">
+            <span>Marca</span>
 
-        <label className="field">
-          <span>Modelo</span>
-
-          {isEdit ? (
-            <input
-              value={form.modelo}
-              onChange={(e) => update('modelo', e.target.value)}
-              required
-            />
-          ) : (
-            <select
-              value={codigoModelo}
-              onChange={handleModeloChange}
-              disabled={!codigoMarca || loadingModelos}
-              required
-            >
-              <option value="">
-                {!codigoMarca
-                  ? 'Selecione uma marca primeiro'
-                  : loadingModelos
-                    ? 'Carregando modelos…'
-                    : 'Selecione um modelo'}
-              </option>
-
-              {modelos.map((modelo) => (
-                <option
-                  key={modelo.codigo}
-                  value={modelo.codigo}
-                >
-                  {simplificarModelo(modelo.nome)}
+            {isEdit ? (
+              <input
+                value={form.marca}
+                onChange={(e) => update('marca', e.target.value)}
+                required
+              />
+            ) : (
+              <select
+                value={codigoMarca}
+                onChange={handleMarcaChange}
+                disabled={loadingMarcas}
+                required
+              >
+                <option value="">
+                  {loadingMarcas
+                    ? 'Carregando marcas…'
+                    : 'Selecione uma marca'}
                 </option>
-              ))}
-            </select>
-          )}
 
-          {errors.modelo && (
-            <small className="field-error">
-              {Array.isArray(errors.modelo) ? errors.modelo[0] : errors.modelo}
-            </small>
-          )}
-        </label>
+                {marcas.map((marca) => (
+                  <option key={marca.codigo} value={marca.codigo}>
+                    {marca.nome}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {errors.marca && (
+              <small className="field-error">
+                {Array.isArray(errors.marca) ? errors.marca[0] : errors.marca}
+              </small>
+            )}
+          </label>
+
+          <label className="field">
+            <span>Modelo</span>
+
+            {isEdit ? (
+              <input
+                value={form.modelo}
+                onChange={(e) => update('modelo', e.target.value)}
+                required
+              />
+            ) : (
+              <select
+                value={codigoModelo}
+                onChange={handleModeloChange}
+                disabled={!codigoMarca || loadingModelos}
+                required
+              >
+                <option value="">
+                  {!codigoMarca
+                    ? 'Selecione uma marca primeiro'
+                    : loadingModelos
+                      ? 'Carregando modelos…'
+                      : 'Selecione um modelo'}
+                </option>
+
+                {modelos.map((modelo) => (
+                  <option key={modelo.codigo} value={modelo.codigo}>
+                    {simplificarModelo(modelo.nome)}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {errors.modelo && (
+              <small className="field-error">
+                {Array.isArray(errors.modelo) ? errors.modelo[0] : errors.modelo}
+              </small>
+            )}
+          </label>
+        </div>
 
         {/* ANO */}
 
@@ -889,30 +889,32 @@ export default function VehicleFormModal({
           </label>
         </div>
 
-        {/* STATUS */}
-
-        <label className="field">
-          <span>Status</span>
-
-          <select
-            value={form.status}
-            onChange={(e) =>
-              update(
-                'status',
-                e.target.value
-              )
-            }
-          >
-            {STATUS.map((s) => (
-              <option
-                key={s.value}
-                value={s.value}
-              >
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="field-row">
+          <label className="field">
+            <span>KM atual</span>
+            <input
+              type="number"
+              min={0}
+              step="1"
+              value={form.km_atual ?? 0}
+              onChange={(e) => update('km_atual', e.target.value)}
+              required
+            />
+            {errors.km_atual && (
+              <small className="field-error">
+                {Array.isArray(errors.km_atual) ? errors.km_atual[0] : errors.km_atual}
+              </small>
+            )}
+          </label>
+          <label className="field">
+            <span>Última manutenção</span>
+            <input
+              type="date"
+              value={form.data_ultima_manutencao || ''}
+              onChange={(e) => update('data_ultima_manutencao', e.target.value)}
+            />
+          </label>
+        </div>
 
         <div className="field-row">
           <label className="field">
@@ -990,7 +992,7 @@ export default function VehicleFormModal({
           >
             {saving
               ? 'Salvando…'
-              : 'Salvar veículo'}
+              : 'Salvar'}
           </button>
         </div>
       </form>

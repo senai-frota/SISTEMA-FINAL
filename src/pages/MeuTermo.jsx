@@ -6,12 +6,6 @@ import { useAuth } from '../context/AuthContext'
 
 const ENTIDADES = ['FIBRA', 'SESI', 'SENAI', 'IEL']
 
-function hojeInput() {
-  const d = new Date()
-  const pad = (n) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-}
-
 export default function MeuTermo() {
   const { loadPerfil } = useAuth()
   const [loading, setLoading] = useState(true)
@@ -20,7 +14,6 @@ export default function MeuTermo() {
     entidade: 'SENAI',
     cpf: '',
     cnh: '',
-    data_solicitacao: hojeInput(),
     arquivo: null,
   })
   const [errors, setErrors] = useState({})
@@ -55,7 +48,6 @@ export default function MeuTermo() {
       fd.append('entidade', form.entidade)
       fd.append('cpf', form.cpf)
       fd.append('cnh', form.cnh)
-      fd.append('data_solicitacao', form.data_solicitacao)
       fd.append('arquivo_pdf', form.arquivo)
       await api.post('/termos/', fd)
       setForm((f) => ({ ...f, arquivo: null }))
@@ -82,12 +74,7 @@ export default function MeuTermo() {
   return (
     <div className="page">
       <div className="page-header">
-        <div>
-          <h1>Termo de Responsabilidade</h1>
-          <p className="page-subtitle">
-            Retire o documento na secretaria, assine e envie o arquivo para renovação anual da conta.
-          </p>
-        </div>
+        <h1>Termo de responsabilidade</h1>
       </div>
 
       {loading ? (
@@ -114,7 +101,7 @@ export default function MeuTermo() {
                 )}
               </h3>
               <p>{status?.mensagem}</p>
-              {status?.data_validade && (
+              {status?.data_validade && status?.situacao !== 'valido' && (
                 <p className="muted-note">Válido até {formatDate(status.data_validade)}</p>
               )}
               {termo?.arquivo_pdf_url && (
@@ -131,6 +118,9 @@ export default function MeuTermo() {
                 <h2>Enviar termo assinado</h2>
               </div>
               <form onSubmit={handleSubmit} className="form-grid">
+                <p className="muted-note">
+                  Retire o termo na secretaria, assine e envie o arquivo. A renovação é anual.
+                </p>
                 <label className="field">
                   <span>Entidade</span>
                   <select
@@ -167,16 +157,6 @@ export default function MeuTermo() {
                   </label>
                 </div>
                 <label className="field">
-                  <span>Data da solicitação</span>
-                  <input
-                    type="date"
-                    max={hojeInput()}
-                    value={form.data_solicitacao}
-                    onChange={(e) => update('data_solicitacao', e.target.value)}
-                    required
-                  />
-                </label>
-                <label className="field">
                   <span>Documento assinado (PDF ou imagem)</span>
                   <input
                     type="file"
@@ -197,7 +177,7 @@ export default function MeuTermo() {
                 )}
                 <div className="modal-actions">
                   <button type="submit" className="btn btn-primary" disabled={saving}>
-                    {saving ? 'Enviando…' : 'Enviar termo'}
+                    {saving ? 'Enviando…' : 'Enviar'}
                   </button>
                 </div>
               </form>

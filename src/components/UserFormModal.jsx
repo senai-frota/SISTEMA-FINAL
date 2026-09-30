@@ -96,8 +96,7 @@ export default function UserFormModal({ usuario, onClose, onSaved }) {
         {!usuario && (
           <>
             <p className="muted-note">
-              A senha não é definida pelo administrador. No primeiro acesso, o usuário
-              informa apenas a matrícula e cria a própria senha.
+              O próprio usuário cria a senha no primeiro acesso, usando a matrícula.
             </p>
 
             <label className="checkbox-field">
@@ -113,7 +112,7 @@ export default function UserFormModal({ usuario, onClose, onSaved }) {
 
         {usuario && (
           <p className="muted-note">
-            Perfil (administrador/funcionário) e senha não podem ser alterados aqui.
+            Perfil e senha não podem ser alterados aqui.
             {usuario.precisa_definir_senha
               ? ' Este usuário ainda precisa concluir o primeiro acesso.'
               : ''}
@@ -138,7 +137,7 @@ export default function UserFormModal({ usuario, onClose, onSaved }) {
             Cancelar
           </button>
           <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? 'Salvando…' : 'Salvar usuário'}
+            {saving ? 'Salvando…' : 'Salvar'}
           </button>
         </div>
       </form>

@@ -1,22 +1,36 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { useFeedback } from '../context/FeedbackContext'
 import StatusBadge from '../components/StatusBadge'
 import EmptyState from '../components/EmptyState'
 import VistoriaModal from '../components/VistoriaModal'
-import Modal from '../components/Modal'
+import ConfirmDialog from '../components/ConfirmDialog'
 import { formatDateTime } from '../utils/format'
+import { mensagemErroApi } from '../utils/erros'
 import { isMobileClient } from '../utils/device'
+
+/** Tolerância de check-in/check-out (± minutos) — espelha o backend. */
+export const TOLERANCIA_RESERVA_MINUTOS = 30
 
 function dentroJanelaOperacional(agora = new Date()) {
   const minutos = agora.getHours() * 60 + agora.getMinutes()
   return minutos >= 6 * 60 && minutos <= 22 * 60
 }
 
-function dentroIntervaloReserva(reserva, agora = new Date()) {
+function limitesComTolerancia(reserva) {
   const inicio = new Date(reserva.data_inicio)
   const fim = new Date(reserva.data_fim)
-  return agora >= inicio && agora <= fim
+  const tolMs = TOLERANCIA_RESERVA_MINUTOS * 60 * 1000
+  return {
+    inicioTol: new Date(inicio.getTime() - tolMs),
+    fimTol: new Date(fim.getTime() + tolMs),
+  }
+}
+
+function dentroIntervaloReserva(reserva, agora = new Date()) {
+  const { inicioTol, fimTol } = limitesComTolerancia(reserva)
+  return agora >= inicioTol && agora <= fimTol
 }
 
 function podeExibirCheckin(reserva, userId) {
@@ -31,6 +45,7 @@ function podeExibirCheckout(reserva, userId) {
   if (reserva.status !== 'em_andamento') return false
   if (String(reserva.usuario) !== String(userId)) return false
   if (!dentroJanelaOperacional()) return false
+  if (!dentroIntervaloReserva(reserva)) return false
   return true
 }
 
@@ -41,24 +56,42 @@ function mensagemBloqueioCheckin(reserva, userId) {
     return 'Check-in permitido apenas entre 06:00 e 22:00.'
   }
   const agora = new Date()
-  if (agora < new Date(reserva.data_inicio)) {
-    return 'Check-in disponível a partir do horário de início da reserva.'
+  const { inicioTol, fimTol } = limitesComTolerancia(reserva)
+  if (agora < inicioTol) {
+    return `Check-in disponível a partir de ${TOLERANCIA_RESERVA_MINUTOS} minutos antes do horário de início da reserva.`
   }
-  if (agora > new Date(reserva.data_fim)) {
-    return 'O horário da reserva já encerrou. Check-in não é mais permitido.'
+  if (agora > fimTol) {
+    return `O prazo de check-in encerrou (${TOLERANCIA_RESERVA_MINUTOS} minutos após o fim da reserva).`
+  }
+  return null
+}
+
+function mensagemBloqueioCheckout(reserva, userId) {
+  if (reserva.status !== 'em_andamento') return null
+  if (String(reserva.usuario) !== String(userId)) return null
+  if (!dentroJanelaOperacional()) {
+    return 'Check-out permitido apenas entre 06:00 e 22:00.'
+  }
+  const agora = new Date()
+  const { inicioTol, fimTol } = limitesComTolerancia(reserva)
+  if (agora < inicioTol) {
+    return `Check-out disponível a partir de ${TOLERANCIA_RESERVA_MINUTOS} minutos antes do horário de início da reserva.`
+  }
+  if (agora > fimTol) {
+    return `O prazo de check-out encerrou (${TOLERANCIA_RESERVA_MINUTOS} minutos após o fim da reserva).`
   }
   return null
 }
 
 export default function Reservas() {
   const { user, isAdmin } = useAuth()
+  const feedback = useFeedback()
   const [reservas, setReservas] = useState([])
   const [loading, setLoading] = useState(true)
   const [statusFiltro, setStatusFiltro] = useState('')
   const [vistoriaAlvo, setVistoriaAlvo] = useState(null)
   const [processando, setProcessando] = useState(null)
   const [rejeitarAlvo, setRejeitarAlvo] = useState(null)
-  const [observacao, setObservacao] = useState('')
   const [, setTick] = useState(0)
 
   async function load() {
@@ -84,14 +117,38 @@ export default function Reservas() {
   }, [])
 
   async function handleCancelar(reserva) {
-    if (!confirm('Cancelar esta reserva? O registro permanecerá no histórico.')) return
-    await api.delete(`/reservas/${reserva.id}/`)
+    const deOutroUsuario = String(reserva.usuario) !== String(user?.id)
+    const resposta = await feedback.confirmar({
+      titulo: 'Cancelar reserva',
+      mensagem: deOutroUsuario
+        ? `Cancelar a reserva de ${reserva.usuario_nome || 'outro usuário'}? O registro permanecerá no histórico e o solicitante verá a justificativa.`
+        : 'Cancelar esta reserva? O registro permanecerá no histórico.',
+      confirmar: 'Cancelar reserva',
+      cancelar: 'Voltar',
+      tom: 'danger',
+      justificativa: deOutroUsuario ? { placeholder: 'Motivo do cancelamento' } : undefined,
+    })
+    if (!resposta) return
+    try {
+      await api.delete(
+        `/reservas/${reserva.id}/`,
+        deOutroUsuario ? { data: { justificativa: resposta } } : undefined
+      )
+      feedback.sucesso('Reserva cancelada.')
+    } catch (err) {
+      feedback.erro(mensagemErroApi(err, 'Não foi possível cancelar a reserva.'))
+    }
     load()
   }
 
   async function handleDecisao(reserva, status, obs = '') {
     if (status === 'aprovada') {
-      if (!confirm('Aprovar esta solicitação de reserva?')) return
+      const confirmado = await feedback.confirmar({
+        titulo: 'Aprovar reserva',
+        mensagem: 'Aprovar esta solicitação de reserva?',
+        confirmar: 'Aprovar',
+      })
+      if (!confirmado) return
     }
     setProcessando(reserva.id)
     try {
@@ -100,32 +157,30 @@ export default function Reservas() {
         observacao_admin: obs,
       })
       setRejeitarAlvo(null)
-      setObservacao('')
+      feedback.sucesso(status === 'aprovada' ? 'Reserva aprovada.' : 'Reserva negada.')
       await load()
     } catch (err) {
-      const msg =
-        err.response?.data?.detail ||
-        err.response?.data?.non_field_errors?.[0] ||
-        'Não foi possível processar a decisão.'
-      alert(typeof msg === 'string' ? msg : JSON.stringify(msg))
+      feedback.erro(mensagemErroApi(err, 'Não foi possível processar a decisão.'))
     } finally {
       setProcessando(null)
     }
   }
 
-  function abrirVistoria(reserva, tipo) {
+  async function abrirVistoria(reserva, tipo) {
+    const rotulo = tipo === 'checkin' ? 'Check-in' : 'Check-out'
     if (!isMobileClient()) {
-      alert(
-        `${tipo === 'checkin' ? 'Check-in' : 'Check-out'} só pode ser feito no celular ou tablet. ` +
+      feedback.aviso(
+        `${rotulo} só pode ser feito no celular ou tablet. ` +
           'Abra o sistema no dispositivo móvel para capturar as fotos.'
       )
       return
     }
-    const msg =
-      tipo === 'checkin'
-        ? 'Iniciar check-in? Você precisará capturar 5 fotos com a câmera.'
-        : 'Iniciar check-out? Você precisará capturar 5 fotos com a câmera.'
-    if (!confirm(msg)) return
+    const confirmado = await feedback.confirmar({
+      titulo: `Iniciar ${rotulo.toLowerCase()}`,
+      mensagem: `Iniciar ${rotulo.toLowerCase()}? Você precisará capturar 5 fotos com a câmera.`,
+      confirmar: `Iniciar ${rotulo.toLowerCase()}`,
+    })
+    if (!confirmado) return
     setVistoriaAlvo({ reserva, tipo })
   }
 
@@ -135,28 +190,18 @@ export default function Reservas() {
     return String(reserva.usuario) === String(user?.id)
   }
 
-  function rotuloStatusReserva(r) {
-    if (r.status === 'aprovada') return 'Aguardando check-in'
-    if (r.status === 'em_andamento') return 'Em utilização (veículo em uso)'
-    if (r.status === 'concluida') return 'Utilização encerrada'
-    return null
-  }
-
   return (
     <div className="page">
       <div className="page-header">
-        <div>
-          <h1>{isAdmin ? 'Reservas' : 'Minhas reservas'}</h1>
-          <p className="page-subtitle">
-            {isAdmin
-              ? 'Analise solicitações, aprove, rejeite ou acompanhe o histórico.'
-              : 'Acompanhe suas solicitações, check-in e check-out.'}
-          </p>
-        </div>
+        <h1>{isAdmin ? 'Reservas' : 'Minhas reservas'}</h1>
       </div>
 
-      <div className="toolbar">
-        <select value={statusFiltro} onChange={(e) => setStatusFiltro(e.target.value)}>
+      <div className="toolbar toolbar-inline">
+        <select
+          aria-label="Filtrar por status"
+          value={statusFiltro}
+          onChange={(e) => setStatusFiltro(e.target.value)}
+        >
           <option value="">Todos os status</option>
           <option value="pendente">Pendente</option>
           <option value="aprovada">Aprovada</option>
@@ -165,6 +210,10 @@ export default function Reservas() {
           <option value="concluida">Concluída</option>
           <option value="cancelada">Cancelada</option>
         </select>
+        <span className="muted-note">
+          Check-in/check-out: ±{TOLERANCIA_RESERVA_MINUTOS} min do horário previsto, das 06:00 às
+          22:00.
+        </span>
       </div>
 
       {loading ? (
@@ -172,18 +221,15 @@ export default function Reservas() {
       ) : reservas.length === 0 ? (
         <EmptyState
           icon="▤"
-          title="Nenhuma reserva por aqui"
-          description={
-            isAdmin
-              ? 'Não há reservas com o filtro selecionado.'
-              : 'Solicite um veículo na página de Veículos para começar.'
-          }
+          title="Nenhuma reserva encontrada"
+          description={isAdmin || statusFiltro ? undefined : 'Reserve um veículo na página Veículos.'}
         />
       ) : (
         <div className="reservation-list">
           {reservas.map((r) => {
-            const extra = rotuloStatusReserva(r)
             const bloqueioCheckin = mensagemBloqueioCheckin(r, user?.id)
+            const bloqueioCheckout = mensagemBloqueioCheckout(r, user?.id)
+            const checkinDisponivel = podeExibirCheckin(r, user?.id)
             return (
               <div key={r.id} className="reservation-card">
                 <div className="reservation-card-main">
@@ -196,16 +242,12 @@ export default function Reservas() {
                       {r.destino || 'Destino não informado'} · {r.passageiros} passageiro(s)
                       {r.modalidade === 'turno' && r.turno_display
                         ? ` · Turno: ${r.turno_display}`
-                        : r.modalidade === 'horario'
-                          ? ' · Horário personalizado'
-                          : ''}
+                        : ''}
+                      {r.pernoite &&
+                        ` · Pernoite${r.unidade_pernoite ? `: ${r.unidade_pernoite}` : ''}`}
                     </p>
-                    {extra && <p className="muted-note">{extra}</p>}
-                    {r.pernoite && (
-                      <p className="muted-note">
-                        Pernoite: SIM
-                        {r.unidade_pernoite ? ` · ${r.unidade_pernoite}` : ''}
-                      </p>
+                    {r.status === 'aprovada' && !checkinDisponivel && !bloqueioCheckin && (
+                      <p className="muted-note">Aguardando check-in</p>
                     )}
                   </div>
                   <StatusBadge status={r.status} />
@@ -231,6 +273,7 @@ export default function Reservas() {
                 )}
 
                 {bloqueioCheckin && <div className="admin-note">{bloqueioCheckin}</div>}
+                {bloqueioCheckout && <div className="admin-note">{bloqueioCheckout}</div>}
 
                 <div className="reservation-actions">
                   {r.status === 'pendente' && isAdmin && (
@@ -238,10 +281,7 @@ export default function Reservas() {
                       <button
                         className="btn btn-ghost-danger btn-sm"
                         disabled={processando === r.id}
-                        onClick={() => {
-                          setObservacao('')
-                          setRejeitarAlvo(r)
-                        }}
+                        onClick={() => setRejeitarAlvo(r)}
                       >
                         Rejeitar
                       </button>
@@ -264,7 +304,7 @@ export default function Reservas() {
                     </button>
                   )}
 
-                  {podeExibirCheckin(r, user?.id) && (
+                  {checkinDisponivel && (
                     <button
                       className="btn btn-primary btn-touch"
                       onClick={() => abrirVistoria(r, 'checkin')}
@@ -293,6 +333,11 @@ export default function Reservas() {
           tipo={vistoriaAlvo.tipo}
           onClose={() => setVistoriaAlvo(null)}
           onDone={() => {
+            feedback.sucesso(
+              vistoriaAlvo.tipo === 'checkin'
+                ? 'Check-in registrado. O veículo está em uso.'
+                : 'Check-out registrado. A utilização foi encerrada.'
+            )
             setVistoriaAlvo(null)
             load()
           }}
@@ -300,34 +345,18 @@ export default function Reservas() {
       )}
 
       {rejeitarAlvo && (
-        <Modal title="Rejeitar solicitação" onClose={() => setRejeitarAlvo(null)} width={480}>
-          <p className="muted-note">
-            Informe o motivo da rejeição (opcional). A reserva permanecerá no histórico como rejeitada.
-          </p>
-          <label className="field">
-            <span>Observação</span>
-            <textarea
-              rows={3}
-              value={observacao}
-              onChange={(e) => setObservacao(e.target.value)}
-              placeholder="Motivo da rejeição"
-              style={{ textTransform: 'uppercase' }}
-            />
-          </label>
-          <div className="modal-actions">
-            <button type="button" className="btn btn-ghost" onClick={() => setRejeitarAlvo(null)}>
-              Voltar
-            </button>
-            <button
-              type="button"
-              className="btn btn-ghost-danger"
-              disabled={processando === rejeitarAlvo.id}
-              onClick={() => handleDecisao(rejeitarAlvo, 'negada', observacao)}
-            >
-              Confirmar rejeição
-            </button>
-          </div>
-        </Modal>
+        <ConfirmDialog
+          title="Rejeitar solicitação"
+          message="A reserva fica no histórico como rejeitada e o solicitante verá a justificativa."
+          confirmLabel="Rejeitar"
+          cancelLabel="Voltar"
+          tone="danger"
+          requireReason
+          reasonPlaceholder="Motivo da rejeição"
+          loading={processando === rejeitarAlvo.id}
+          onConfirm={(motivo) => handleDecisao(rejeitarAlvo, 'negada', motivo)}
+          onCancel={() => setRejeitarAlvo(null)}
+        />
       )}
     </div>
   )

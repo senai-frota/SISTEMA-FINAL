@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import api from '../services/api'
 import Modal from './Modal'
+import { useFeedback } from '../context/FeedbackContext'
 import { isMobileClient } from '../utils/device'
 
 const FOTOS_OBRIGATORIAS = [
@@ -61,6 +62,7 @@ function lerGeoOpcional() {
 }
 
 export default function VistoriaModal({ reserva, tipo, onClose, onDone }) {
+  const { confirmar } = useFeedback()
   const mobile = isMobileClient()
   const cameraInputRef = useRef(null)
 
@@ -214,10 +216,18 @@ export default function VistoriaModal({ reserva, tipo, onClose, onDone }) {
       return
     }
 
-    const confirmado = window.confirm(
+    const confirmado = await confirmar(
       tipo === 'checkin'
-        ? 'Confirmar check-in? O veículo passará para EM USO.'
-        : 'Confirmar check-out? A utilização será encerrada e o veículo voltará para DISPONÍVEL.'
+        ? {
+            titulo: 'Confirmar check-in',
+            mensagem: 'Confirmar check-in? O veículo passará para EM USO.',
+            confirmar: 'Confirmar check-in',
+          }
+        : {
+            titulo: 'Confirmar check-out',
+            mensagem: 'Confirmar check-out? A utilização será encerrada e o veículo voltará para DISPONÍVEL.',
+            confirmar: 'Confirmar check-out',
+          }
     )
     if (!confirmado) return
 
@@ -264,10 +274,6 @@ export default function VistoriaModal({ reserva, tipo, onClose, onDone }) {
             {tipo === 'checkin' ? 'Check-in' : 'Check-out'} só pode ser realizado em
             smartphone ou tablet. Abra o sistema no celular para continuar.
           </div>
-          <p className="muted-note">
-            No computador você pode acompanhar a reserva, mas a captura das fotos e a
-            conclusão da vistoria devem ser feitas no dispositivo móvel.
-          </p>
           <div className="modal-actions">
             <button type="button" className="btn btn-primary btn-block" onClick={onClose}>
               Entendi

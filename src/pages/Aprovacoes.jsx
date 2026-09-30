@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
-import StatusBadge from '../components/StatusBadge'
 import EmptyState from '../components/EmptyState'
 import { formatDateTime } from '../utils/format'
+import { mensagemErroApi } from '../utils/erros'
+import { useFeedback } from '../context/FeedbackContext'
 
 export default function Aprovacoes() {
+  const feedback = useFeedback()
   const [reservas, setReservas] = useState([])
   const [loading, setLoading] = useState(true)
   const [processando, setProcessando] = useState(null)
@@ -25,13 +27,29 @@ export default function Aprovacoes() {
   }, [])
 
   async function handleDecisao(reserva, status) {
+    let observacao = observacoes[reserva.id] || ''
+    if (status === 'negada') {
+      const justificativa = await feedback.confirmar({
+        titulo: 'Negar solicitação',
+        mensagem: `Negar a reserva de ${reserva.usuario_nome || 'usuário'}? O solicitante verá a justificativa.`,
+        confirmar: 'Negar',
+        cancelar: 'Voltar',
+        tom: 'danger',
+        justificativa: { placeholder: 'Motivo da negação', inicial: observacao },
+      })
+      if (!justificativa) return
+      observacao = justificativa
+    }
     setProcessando(reserva.id)
     try {
       await api.patch(`/reservas/${reserva.id}/aprovar/`, {
         status,
-        observacao_admin: observacoes[reserva.id] || '',
+        observacao_admin: observacao,
       })
+      feedback.sucesso(status === 'aprovada' ? 'Reserva aprovada.' : 'Reserva negada.')
       load()
+    } catch (err) {
+      feedback.erro(mensagemErroApi(err, 'Não foi possível processar a decisão.'))
     } finally {
       setProcessando(null)
     }
@@ -40,16 +58,20 @@ export default function Aprovacoes() {
   return (
     <div className="page">
       <div className="page-header">
-        <div>
-          <h1>Aprovações</h1>
-          <p className="page-subtitle">Solicitações de reserva aguardando decisão.</p>
-        </div>
+        <h1>
+          Aprovações
+          {!loading && reservas.length > 0 && (
+            <span className="page-count">
+              {reservas.length} pendente{reservas.length !== 1 ? 's' : ''}
+            </span>
+          )}
+        </h1>
       </div>
 
       {loading ? (
         <div className="skeleton-list" />
       ) : reservas.length === 0 ? (
-        <EmptyState icon="✔" title="Tudo em dia" description="Não há solicitações pendentes no momento." />
+        <EmptyState icon="✔" title="Nenhuma solicitação pendente" />
       ) : (
         <div className="reservation-list">
           {reservas.map((r) => (
@@ -58,11 +80,10 @@ export default function Aprovacoes() {
                 <div>
                   <strong>{r.veiculo_info || `Veículo #${r.veiculo}`}</strong>
                   <p className="muted-note">
-                    Solicitado por {r.usuario_nome || `usuário #${r.usuario}`}
+                    {r.usuario_nome || `Usuário #${r.usuario}`}
                     {r.usuario_matricula ? ` · Matrícula ${r.usuario_matricula}` : ''}
                   </p>
                 </div>
-                <StatusBadge status={r.status} />
               </div>
 
               <div className="reservation-dates">
@@ -88,32 +109,34 @@ export default function Aprovacoes() {
               </p>
               <p className="muted-note">
                 Destino: {r.destino || 'não informado'} · {r.passageiros} passageiro(s)
+                {r.pernoite &&
+                  ` · Pernoite${r.unidade_pernoite ? `: ${r.unidade_pernoite}` : ''}`}
               </p>
 
-              <label className="field">
-                <span>Observação (opcional)</span>
+              <div className="reservation-decision">
                 <input
+                  type="text"
+                  aria-label="Observação para o solicitante"
                   value={observacoes[r.id] || ''}
                   onChange={(e) => setObservacoes((o) => ({ ...o, [r.id]: e.target.value }))}
-                  placeholder="Ex.: Retire na garagem às 8h."
+                  placeholder="Observação (opcional)"
                 />
-              </label>
-
-              <div className="reservation-actions">
-                <button
-                  className="btn btn-ghost-danger btn-sm"
-                  disabled={processando === r.id}
-                  onClick={() => handleDecisao(r, 'negada')}
-                >
-                  Negar
-                </button>
-                <button
-                  className="btn btn-primary btn-sm"
-                  disabled={processando === r.id}
-                  onClick={() => handleDecisao(r, 'aprovada')}
-                >
-                  {processando === r.id ? 'Processando…' : 'Aprovar'}
-                </button>
+                <div className="reservation-actions">
+                  <button
+                    className="btn btn-ghost-danger btn-sm"
+                    disabled={processando === r.id}
+                    onClick={() => handleDecisao(r, 'negada')}
+                  >
+                    Negar
+                  </button>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    disabled={processando === r.id}
+                    onClick={() => handleDecisao(r, 'aprovada')}
+                  >
+                    {processando === r.id ? 'Processando…' : 'Aprovar'}
+                  </button>
+                </div>
               </div>
             </div>
           ))}

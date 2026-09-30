@@ -3,6 +3,8 @@ import api from '../services/api'
 
 const AuthContext = createContext(null)
 
+export const CHAVE_SESSAO_INICIADA = 'frota_sessao_iniciada'
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -66,6 +68,7 @@ export function AuthProvider({ children }) {
   function logout() {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
+    sessionStorage.removeItem(CHAVE_SESSAO_INICIADA)
     setUser(null)
   }
 

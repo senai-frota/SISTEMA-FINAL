@@ -56,12 +56,7 @@ export default function MeuCNH() {
   return (
     <div className="page">
       <div className="page-header">
-        <div>
-          <h1>Minha CNH</h1>
-          <p className="page-subtitle">
-            Envie o documento da CNH. A validade será informada pelo gestor na aprovação.
-          </p>
-        </div>
+        <h1>Minha CNH</h1>
       </div>
 
       {loading ? (
@@ -78,9 +73,7 @@ export default function MeuCNH() {
             }`}
           >
             <div className="termo-status-main">
-              <h3>
-                <StatusBadge status={status?.situacao || 'pendente'} /> Situação da CNH
-              </h3>
+              <StatusBadge status={status?.situacao || 'pendente'} />
               <p>{status?.mensagem}</p>
               {status?.data_validade && (
                 <p className="muted-note">Validade: {formatDate(status.data_validade)}</p>
@@ -124,8 +117,7 @@ export default function MeuCNH() {
                   {errors.arquivo && <small className="field-error">{errors.arquivo[0]}</small>}
                 </label>
                 <p className="muted-note">
-                  Após o envio, aguarde a análise do gestor. A data de validade será definida na
-                  aprovação.
+                  O gestor analisa o documento e define a validade na aprovação.
                 </p>
                 {errors.non_field_errors && (
                   <div className="form-error">
@@ -136,7 +128,7 @@ export default function MeuCNH() {
                 )}
                 <div className="modal-actions">
                   <button type="submit" className="btn btn-primary" disabled={saving || !arquivo}>
-                    {saving ? 'Enviando…' : 'Enviar CNH'}
+                    {saving ? 'Enviando…' : 'Enviar'}
                   </button>
                 </div>
               </form>

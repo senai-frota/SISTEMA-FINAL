@@ -1,17 +1,44 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
-import StatusBadge from '../components/StatusBadge'
-import Modal from '../components/Modal'
+import ConfirmDialog from '../components/ConfirmDialog'
+import { useFeedback } from '../context/FeedbackContext'
 import { formatDateTime } from '../utils/format'
+import { mensagemErroApi } from '../utils/erros'
+
+function totalDe(data) {
+  return data?.count ?? (Array.isArray(data) ? data.length : data?.results?.length ?? 0)
+}
+
+function PainelAlertas({ titulo, alertas }) {
+  return (
+    <div className="alert-group">
+      <h3>{titulo}</h3>
+      <div className="alert-cards">
+        {alertas.map((a) => (
+          <Link
+            key={a.rotulo}
+            to={a.para}
+            className={`alert-card alert-card-${a.valor > 0 ? a.tom : 'ok'}`}
+          >
+            <span className="alert-card-value">{a.valor}</span>
+            <span className="alert-card-label">{a.rotulo}</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function AdminDashboard() {
   const { user } = useAuth()
+  const feedback = useFeedback()
 
   const [reservas, setReservas] = useState([])
-  const [veiculos, setVeiculos] = useState([])
-  const [cnhAlertas, setCnhAlertas] = useState({ pendentes: 0, vencimento: 0, vencidas: 0 })
-  const [termoAlertas, setTermoAlertas] = useState({ pendentes: 0, inativos: 0 })
+  const [totalReservasPendentes, setTotalReservasPendentes] = useState(0)
+  const [frota, setFrota] = useState({ disponiveis: 0, emUso: 0, manutencao: 0, total: 0 })
+  const [pendencias, setPendencias] = useState(null)
   const [loading, setLoading] = useState(true)
   const [processando, setProcessando] = useState(null)
   const [observacoes, setObservacoes] = useState({})
@@ -25,36 +52,26 @@ export default function AdminDashboard() {
     setLoading(true)
 
     try {
-      const [reservasRes, veiculosRes, usuariosRes, cnhPendRes, termoPendRes] = await Promise.all([
+      const contarVeiculos = (params) =>
+        api.get('/veiculos/', { params }).then((res) => totalDe(res.data))
+
+      const [reservasRes, pendenciasRes, disponiveis, emUso, manutencao, total] = await Promise.all([
         api.get('/reservas/', {
           params: { status: 'pendente' },
         }),
-        api.get('/veiculos/'),
-        api.get('/usuarios/'),
-        api.get('/usuarios/cnh/', { params: { status: 'pendente' } }),
-        api.get('/termos/', { params: { status: 'pendente' } }),
+        api.get('/usuarios/pendencias/'),
+        contarVeiculos({ status: 'disponivel' }),
+        contarVeiculos({ status: 'em_uso' }),
+        contarVeiculos({ status: 'manutencao' }),
+        contarVeiculos({ incluir_inativos: true }),
       ])
 
       setReservas(
         reservasRes.data.results ?? reservasRes.data
       )
-
-      setVeiculos(
-        veiculosRes.data.results ?? veiculosRes.data
-      )
-
-      const listaUsuarios = usuariosRes.data.results ?? usuariosRes.data
-      const pendentesCnh = cnhPendRes.data.results ?? cnhPendRes.data
-      const pendentesTermo = termoPendRes.data.results ?? termoPendRes.data
-      setCnhAlertas({
-        pendentes: pendentesCnh.length,
-        vencimento: listaUsuarios.filter((u) => u.cnh?.situacao === 'proxima_vencimento').length,
-        vencidas: listaUsuarios.filter((u) => u.cnh?.situacao === 'vencida').length,
-      })
-      setTermoAlertas({
-        pendentes: pendentesTermo.length,
-        inativos: listaUsuarios.filter((u) => !u.is_active && !u.is_admin).length,
-      })
+      setTotalReservasPendentes(totalDe(reservasRes.data))
+      setFrota({ disponiveis, emUso, manutencao, total })
+      setPendencias(pendenciasRes.data)
     } finally {
       setLoading(false)
     }
@@ -64,19 +81,22 @@ export default function AdminDashboard() {
     load()
   }, [])
 
-  async function handleDecisao(reserva, status) {
+  async function handleDecisao(reserva, status, justificativa) {
     setProcessando(reserva.id)
 
     try {
       await api.patch(`/reservas/${reserva.id}/aprovar/`, {
         status,
         observacao_admin:
-          observacoes[reserva.id] || '',
+          justificativa ?? (observacoes[reserva.id] || ''),
       })
 
       setReservaNegacao(null)
+      feedback.sucesso(status === 'aprovada' ? 'Reserva aprovada.' : 'Reserva negada.')
 
       await load()
+    } catch (err) {
+      feedback.erro(mensagemErroApi(err, 'Não foi possível processar a decisão.'))
     } finally {
       setProcessando(null)
     }
@@ -86,19 +106,59 @@ export default function AdminDashboard() {
     setReservaNegacao(reserva)
   }
 
-  const disponiveis = veiculos.filter(
-    (v) => v.status === 'disponivel'
-  ).length
+  const alertasCnh = pendencias ? [
+    {
+      rotulo: 'Aguardando análise',
+      valor: pendencias.cnh.pendentes_analise,
+      para: '/cnh-pendentes',
+      tom: 'info',
+    },
+    {
+      rotulo: 'Vencidas',
+      valor: pendencias.cnh.vencidas,
+      para: '/usuarios?cnh_situacao=vencida',
+      tom: 'danger',
+    },
+    {
+      rotulo: `Vencendo em até ${pendencias.cnh.dias_alerta} dias`,
+      valor: pendencias.cnh.proximas_vencimento,
+      para: '/usuarios?cnh_situacao=proxima_vencimento',
+      tom: 'warning',
+    },
+    {
+      rotulo: 'Sem CNH válida',
+      valor: pendencias.cnh.sem_cnh_valida,
+      para: '/usuarios?cnh_situacao=sem_cnh,rejeitada',
+      tom: 'warning',
+    },
+  ] : []
 
-  const emUso = veiculos.filter(
-    (v) => v.status === 'em_uso'
-  ).length
-
-  const manutencao = veiculos.filter(
-    (v) => v.status === 'manutencao'
-  ).length
-
-  const totalVeiculos = veiculos.length
+  const alertasTermo = pendencias ? [
+    {
+      rotulo: 'Aguardando análise',
+      valor: pendencias.termo.pendentes_analise,
+      para: '/termos-pendentes',
+      tom: 'info',
+    },
+    {
+      rotulo: 'Vencidos',
+      valor: pendencias.termo.vencidos,
+      para: '/usuarios?termo_situacao=vencido&incluir_inativos=true',
+      tom: 'danger',
+    },
+    {
+      rotulo: 'Sem termo válido',
+      valor: pendencias.termo.sem_termo_valido,
+      para: '/usuarios?termo_situacao=sem_termo,rejeitado&incluir_inativos=true',
+      tom: 'warning',
+    },
+    {
+      rotulo: 'Contas inativas',
+      valor: pendencias.contas_inativas,
+      para: '/usuarios?ativo=false',
+      tom: 'neutral',
+    },
+  ] : []
 
   const totalPaginas = Math.max(
     1,
@@ -123,115 +183,69 @@ export default function AdminDashboard() {
     setPagina(novaPagina)
   }
 
+  const indicadoresFrota = [
+    ['Disponíveis', frota.disponiveis],
+    ['Em uso', frota.emUso],
+    ['Em manutenção', frota.manutencao],
+    ['Total', frota.total],
+  ]
+
   return (
     <div className="page">
-
-      {/* CABEÇALHO */}
       <div className="page-header">
-        <div>
-          <h1>
-            Olá, {user?.nome?.split(' ')[0]}
-          </h1>
-
-          <p className="page-subtitle">
-            Aqui está o resumo administrativo da frota hoje.
-          </p>
-        </div>
+        <h1>Olá, {user?.nome?.split(' ')[0]}</h1>
       </div>
 
-      {/* CONTEÚDO PRINCIPAL */}
       <div className="admin-dashboard-layout">
-
-        {/* APROVAÇÕES */}
         <div className="panel">
-
           <div className="panel-header">
-            <div>
-              <h2>Aprovações</h2>
-
-              <p className="muted-note">
-                Solicitações de reserva aguardando decisão.
-              </p>
-            </div>
-
-            <span className="stat-value stat-value-sm">
-              {loading
-                ? '—'
-                : `${reservas.length} pendente${
-                    reservas.length !== 1
-                      ? 's'
-                      : ''
-                  }`}
-            </span>
+            <h2>
+              Aprovações
+              {!loading && totalReservasPendentes > 0 && (
+                <span className="page-count">
+                  {totalReservasPendentes} pendente{totalReservasPendentes !== 1 ? 's' : ''}
+                </span>
+              )}
+            </h2>
+            <Link to="/aprovacoes" className="link">
+              Ver todas
+            </Link>
           </div>
+
+          {!loading && totalReservasPendentes > reservas.length && (
+            <p className="muted-note">
+              Exibindo {reservas.length} de {totalReservasPendentes}.
+            </p>
+          )}
 
           {loading ? (
             <div className="skeleton-list" />
           ) : reservas.length === 0 ? (
-            <p className="muted-note">
-              Não há solicitações pendentes no momento.
-            </p>
+            <p className="muted-note">Nenhuma solicitação pendente.</p>
           ) : (
             <>
               <div className="reservation-list">
-
                 {reservasPagina.map((r) => (
-                  <div
-                    key={r.id}
-                    className="reservation-card"
-                  >
-
+                  <div key={r.id} className="reservation-card">
                     <div className="reservation-card-main">
-
                       <div>
-                        <strong>
-                          {r.veiculo_info ||
-                            `Veículo #${r.veiculo}`}
-                        </strong>
-
+                        <strong>{r.veiculo_info || `Veículo #${r.veiculo}`}</strong>
                         <p className="muted-note">
-                          Solicitado por{' '}
-                          {r.usuario_nome ||
-                            `usuário #${r.usuario}`}
-
-                          {r.usuario_matricula
-                            ? ` · Matrícula ${r.usuario_matricula}`
-                            : ''}
+                          {r.usuario_nome || `Usuário #${r.usuario}`}
+                          {r.usuario_matricula ? ` · Matrícula ${r.usuario_matricula}` : ''}
                         </p>
                       </div>
-
-                      <StatusBadge
-                        status={r.status}
-                      />
-
                     </div>
 
                     <div className="reservation-dates">
-
                       <div>
-                        <small>
-                          Retirada
-                        </small>
-
-                        <span>
-                          {formatDateTime(
-                            r.data_inicio
-                          )}
-                        </span>
+                        <small>Retirada</small>
+                        <span>{formatDateTime(r.data_inicio)}</span>
                       </div>
-
                       <div>
-                        <small>
-                          Devolução prevista
-                        </small>
-
-                        <span>
-                          {formatDateTime(
-                            r.data_fim
-                          )}
-                        </span>
+                        <small>Devolução prevista</small>
+                        <span>{formatDateTime(r.data_fim)}</span>
                       </div>
-
                     </div>
 
                     {r.pernoite && (
@@ -242,298 +256,126 @@ export default function AdminDashboard() {
                     )}
 
                     <p className="reservation-motivo">
-                      <strong>Motivo:</strong>{' '}
-                      {r.motivo}
+                      <strong>Motivo:</strong> {r.motivo}
                     </p>
-
                     <p className="muted-note">
-                      Destino:{' '}
-                      {r.destino ||
-                        'não informado'}{' '}
-                      · {r.passageiros}{' '}
-                      passageiro(s)
+                      Destino: {r.destino || 'não informado'} · {r.passageiros} passageiro(s)
+                      {r.pernoite &&
+                        ` · Pernoite${r.unidade_pernoite ? `: ${r.unidade_pernoite}` : ''}`}
                     </p>
 
-                    <label className="field">
-
-                      <span>
-                        Observação
-                      </span>
-
+                    <div className="reservation-decision">
                       <input
-                        value={
-                          observacoes[r.id] || ''
-                        }
+                        type="text"
+                        aria-label="Observação para o solicitante"
+                        value={observacoes[r.id] || ''}
                         onChange={(e) =>
-                          setObservacoes(
-                            (o) => ({
-                              ...o,
-                              [r.id]:
-                                e.target.value,
-                            })
-                          )
+                          setObservacoes((o) => ({ ...o, [r.id]: e.target.value }))
                         }
-                        placeholder="Observação opcional"
+                        placeholder="Observação (opcional)"
                       />
-
-                    </label>
-
-                    <div className="reservation-actions">
-
-                      {/* NEGAR */}
-                      <button
-                        className="btn btn-ghost-danger btn-sm"
-                        disabled={
-                          processando === r.id
-                        }
-                        onClick={() =>
-                          confirmarNegacao(r)
-                        }
-                      >
-                        Negar
-                      </button>
-
-                      {/* APROVAR */}
-                      <button
-                        className="btn btn-primary btn-sm"
-                        disabled={
-                          processando === r.id
-                        }
-                        onClick={() =>
-                          handleDecisao(
-                            r,
-                            'aprovada'
-                          )
-                        }
-                      >
-                        {processando === r.id
-                          ? 'Processando…'
-                          : 'Aprovar'}
-                      </button>
-
+                      <div className="reservation-actions">
+                        <button
+                          className="btn btn-ghost-danger btn-sm"
+                          disabled={processando === r.id}
+                          onClick={() => confirmarNegacao(r)}
+                        >
+                          Negar
+                        </button>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          disabled={processando === r.id}
+                          onClick={() => handleDecisao(r, 'aprovada')}
+                        >
+                          {processando === r.id ? 'Processando…' : 'Aprovar'}
+                        </button>
+                      </div>
                     </div>
-
                   </div>
                 ))}
-
               </div>
 
               {totalPaginas > 1 && (
                 <div className="pagination">
-
                   <button
                     className="btn btn-ghost btn-sm"
                     disabled={pagina === 1}
-                    onClick={() =>
-                      mudarPagina(
-                        pagina - 1
-                      )
-                    }
+                    onClick={() => mudarPagina(pagina - 1)}
                   >
                     Anterior
                   </button>
-
                   <span className="muted-note">
-                    Página {pagina} de{' '}
-                    {totalPaginas}
+                    Página {pagina} de {totalPaginas}
                   </span>
-
                   <button
                     className="btn btn-ghost btn-sm"
-                    disabled={
-                      pagina === totalPaginas
-                    }
-                    onClick={() =>
-                      mudarPagina(
-                        pagina + 1
-                      )
-                    }
+                    disabled={pagina === totalPaginas}
+                    onClick={() => mudarPagina(pagina + 1)}
                   >
                     Próxima
                   </button>
-
                 </div>
               )}
-
             </>
           )}
-
         </div>
 
-        {/* INFORMAÇÕES DA FROTA */}
         <div className="admin-stats">
-
-          <div className="stat-card">
-            <span className="stat-label">
-              Veículos disponíveis
-            </span>
-
-            <span className="stat-value">
-              {loading
-                ? '—'
-                : disponiveis}
-            </span>
-          </div>
-
-          <div className="stat-card">
-            <span className="stat-label">
-              Veículos em uso
-            </span>
-
-            <span className="stat-value">
-              {loading
-                ? '—'
-                : emUso}
-            </span>
-          </div>
-
-          <div className="stat-card">
-            <span className="stat-label">
-              Em manutenção
-            </span>
-
-            <span className="stat-value">
-              {loading
-                ? '—'
-                : manutencao}
-            </span>
-          </div>
-
-          <div className="stat-card">
-            <span className="stat-label">
-              Total da frota
-            </span>
-
-            <span className="stat-value">
-              {loading
-                ? '—'
-                : totalVeiculos}
-            </span>
-          </div>
-
-          <div className="stat-card">
-            <span className="stat-label">CNH pendentes</span>
-            <span className="stat-value">{loading ? '—' : cnhAlertas.pendentes}</span>
-          </div>
-
-          <div className="stat-card">
-            <span className="stat-label">CNH próximas do vencimento</span>
-            <span className="stat-value">{loading ? '—' : cnhAlertas.vencimento}</span>
-          </div>
-
-          <div className="stat-card">
-            <span className="stat-label">CNH vencidas</span>
-            <span className="stat-value">{loading ? '—' : cnhAlertas.vencidas}</span>
-          </div>
-
-          <div className="stat-card">
-            <span className="stat-label">Termos pendentes</span>
-            <span className="stat-value">{loading ? '—' : termoAlertas.pendentes}</span>
-          </div>
-
-          <div className="stat-card">
-            <span className="stat-label">Contas inativas</span>
-            <span className="stat-value">{loading ? '—' : termoAlertas.inativos}</span>
-          </div>
-
+          <h3 className="admin-stats-title">Frota</h3>
+          {indicadoresFrota.map(([rotulo, valor]) => (
+            <div key={rotulo} className="stat-card">
+              <span className="stat-label">{rotulo}</span>
+              <span className="stat-value">{loading ? '—' : valor}</span>
+            </div>
+          ))}
         </div>
-
       </div>
 
-      {/* MODAL DE CONFIRMAÇÃO */}
-      {reservaNegacao && (
-        <Modal
-          title="Negar solicitação"
-          onClose={() =>
-            setReservaNegacao(null)
-          }
-          width={500}
-        >
+      <div className="panel">
+        <div className="panel-header">
+          <h2>Pendências</h2>
+        </div>
 
-          <div className="form-grid">
-
-            <p>
-              Tem certeza que deseja negar esta
-              solicitação de reserva?
-            </p>
-
-            <div className="admin-note">
-
-              <strong>
-                {reservaNegacao.veiculo_info ||
-                  `Veículo #${reservaNegacao.veiculo}`}
-              </strong>
-
-              <br />
-
-              <span>
-                Solicitado por{' '}
-                {reservaNegacao.usuario_nome ||
-                  `usuário #${reservaNegacao.usuario}`}
-              </span>
-
-              <br />
-
-              <span>
-                {formatDateTime(
-                  reservaNegacao.data_inicio
-                )}
-                {' → '}
-                {formatDateTime(
-                  reservaNegacao.data_fim
-                )}
-              </span>
-
-            </div>
-
-            <p className="muted-note">
-              Esta ação não poderá ser desfeita
-              através desta tela.
-            </p>
-
-            <div className="modal-actions">
-
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() =>
-                  setReservaNegacao(null)
-                }
-                disabled={
-                  processando ===
-                  reservaNegacao.id
-                }
-              >
-                Cancelar
-              </button>
-
-              <button
-                type="button"
-                className="btn btn-ghost-danger"
-                onClick={() =>
-                  handleDecisao(
-                    reservaNegacao,
-                    'negada'
-                  )
-                }
-                disabled={
-                  processando ===
-                  reservaNegacao.id
-                }
-              >
-                {processando ===
-                reservaNegacao.id
-                  ? 'Processando…'
-                  : 'Sim, negar solicitação'}
-              </button>
-
-            </div>
-
+        {loading ? (
+          <div className="skeleton-list" />
+        ) : !pendencias ? (
+          <p className="muted-note">Não foi possível carregar os alertas.</p>
+        ) : (
+          <div className="alert-groups">
+            <PainelAlertas titulo="CNH" alertas={alertasCnh} />
+            <PainelAlertas titulo="Termos e contas" alertas={alertasTermo} />
           </div>
+        )}
+      </div>
 
-        </Modal>
+      {reservaNegacao && (
+        <ConfirmDialog
+          title="Negar solicitação"
+          message="O solicitante verá a justificativa. A negação não pode ser desfeita nesta tela."
+          confirmLabel="Negar"
+          tone="danger"
+          requireReason
+          reasonPlaceholder="Motivo da negação"
+          initialReason={observacoes[reservaNegacao.id] || ''}
+          loading={processando === reservaNegacao.id}
+          onConfirm={(motivo) => handleDecisao(reservaNegacao, 'negada', motivo)}
+          onCancel={() => setReservaNegacao(null)}
+        >
+          <div className="admin-note">
+            <strong>{reservaNegacao.veiculo_info || `Veículo #${reservaNegacao.veiculo}`}</strong>
+            <br />
+            <span>
+              Solicitado por {reservaNegacao.usuario_nome || `usuário #${reservaNegacao.usuario}`}
+            </span>
+            <br />
+            <span>
+              {formatDateTime(reservaNegacao.data_inicio)}
+              {' → '}
+              {formatDateTime(reservaNegacao.data_fim)}
+            </span>
+          </div>
+        </ConfirmDialog>
       )}
-
     </div>
   )
 }
