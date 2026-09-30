@@ -1,6 +1,38 @@
 import axios from 'axios'
+import { clientFormFactor } from '../utils/device'
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+/**
+ * Resolve a URL base da API conforme o ambiente de execução.
+ *
+ * Prioridade:
+ * 1. VITE_API_URL (produção / override explícito)
+ * 2. localhost / 127.0.0.1 → http://localhost:8000/api
+ * 3. acesso pela rede (IP/hostname) → mesmo host da página, porta 8000 + /api
+ */
+export function resolveApiBaseUrl() {
+  const fromEnv = (import.meta.env.VITE_API_URL || '').trim()
+  if (fromEnv) {
+    return fromEnv.replace(/\/$/, '')
+  }
+
+  if (typeof window === 'undefined') {
+    return 'http://localhost:8000/api'
+  }
+
+  const { protocol, hostname } = window.location
+  const isLocalHost =
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '[::1]'
+
+  if (isLocalHost) {
+    return 'http://localhost:8000/api'
+  }
+
+  return `${protocol}//${hostname}:8000/api`
+}
+
+export const API_BASE_URL = resolveApiBaseUrl()
 export const MEDIA_BASE_URL = API_BASE_URL.replace(/\/api\/?$/, '')
 
 const api = axios.create({
@@ -12,6 +44,7 @@ api.interceptors.request.use((config) => {
   if (access) {
     config.headers.Authorization = `Bearer ${access}`
   }
+  config.headers['X-Client-Form-Factor'] = clientFormFactor()
   return config
 })
 

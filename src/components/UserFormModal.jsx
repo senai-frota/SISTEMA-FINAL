@@ -8,13 +8,12 @@ const empty = {
   email: '',
   telefone: '',
   setor: '',
-  password: '',
   is_admin: false,
   is_active: true,
 }
 
 export default function UserFormModal({ usuario, onClose, onSaved }) {
-  const [form, setForm] = useState(usuario ? { ...empty, ...usuario, password: '' } : empty)
+  const [form, setForm] = useState(usuario ? { ...empty, ...usuario } : empty)
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
 
@@ -28,11 +27,19 @@ export default function UserFormModal({ usuario, onClose, onSaved }) {
     setErrors({})
     try {
       if (usuario) {
-        // A edição só aceita nome, e-mail, telefone, setor e status ativo.
         const { nome, email, telefone, setor, is_active } = form
         await api.patch(`/usuarios/${usuario.id}/`, { nome, email, telefone, setor, is_active })
       } else {
-        await api.post('/usuarios/', form)
+        const { matricula, nome, email, telefone, setor, is_admin, is_active } = form
+        await api.post('/usuarios/', {
+          matricula,
+          nome,
+          email,
+          telefone,
+          setor,
+          is_admin,
+          is_active,
+        })
       }
       onSaved()
     } catch (err) {
@@ -88,16 +95,9 @@ export default function UserFormModal({ usuario, onClose, onSaved }) {
 
         {!usuario && (
           <>
-            <label className="field">
-              <span>Senha</span>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => update('password', e.target.value)}
-                required
-              />
-              {errors.password && <small className="field-error">{errors.password[0]}</small>}
-            </label>
+            <p className="muted-note">
+              O próprio usuário cria a senha no primeiro acesso, usando a matrícula.
+            </p>
 
             <label className="checkbox-field">
               <input
@@ -112,8 +112,10 @@ export default function UserFormModal({ usuario, onClose, onSaved }) {
 
         {usuario && (
           <p className="muted-note">
-            Senha e perfil (administrador/funcionário) não podem ser alterados aqui — apenas na
-            criação do usuário.
+            Perfil e senha não podem ser alterados aqui.
+            {usuario.precisa_definir_senha
+              ? ' Este usuário ainda precisa concluir o primeiro acesso.'
+              : ''}
           </p>
         )}
 
@@ -135,7 +137,7 @@ export default function UserFormModal({ usuario, onClose, onSaved }) {
             Cancelar
           </button>
           <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? 'Salvando…' : 'Salvar usuário'}
+            {saving ? 'Salvando…' : 'Salvar'}
           </button>
         </div>
       </form>

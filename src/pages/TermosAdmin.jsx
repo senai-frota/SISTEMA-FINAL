@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
 import EmptyState from '../components/EmptyState'
-import Modal from '../components/Modal'
-import { formatDate } from '../utils/format'
+import ConfirmDialog from '../components/ConfirmDialog'
+import { useFeedback } from '../context/FeedbackContext'
+import { formatDate, formatDateTime } from '../utils/format'
+import { mensagemErroApi } from '../utils/erros'
 
 const ENTIDADE_LABELS = {
   FIBRA: 'FIBRA',
@@ -12,6 +14,7 @@ const ENTIDADE_LABELS = {
 }
 
 export default function TermosAdmin() {
+  const feedback = useFeedback()
   const [termos, setTermos] = useState([])
   const [loading, setLoading] = useState(true)
   const [processando, setProcessando] = useState(null)
@@ -32,15 +35,22 @@ export default function TermosAdmin() {
     load()
   }, [])
 
-  async function handleDecisao(termo, status) {
+  async function handleDecisao(termo, status, justificativa) {
     setProcessando(termo.id)
     try {
       await api.patch(`/termos/${termo.id}/decisao/`, {
         status,
-        observacao_admin: observacoes[termo.id] || '',
+        observacao_admin: justificativa ?? (observacoes[termo.id] || ''),
       })
       setTermoRejeitar(null)
+      feedback.sucesso(
+        status === 'aprovado'
+          ? `Termo de ${termo.usuario_nome} aprovado.`
+          : `Termo de ${termo.usuario_nome} rejeitado.`
+      )
       await load()
+    } catch (err) {
+      feedback.erro(mensagemErroApi(err, 'Não foi possível concluir a decisão sobre o termo.'))
     } finally {
       setProcessando(null)
     }
@@ -53,22 +63,18 @@ export default function TermosAdmin() {
   return (
     <div className="page">
       <div className="page-header">
-        <div>
-          <h1>Termos de Responsabilidade</h1>
-          <p className="page-subtitle">
-            Solicitações aguardando validação para liberar reservas de veículos.
-          </p>
-        </div>
+        <h1>
+          Termos pendentes
+          {!loading && termos.length > 0 && (
+            <span className="page-count">{termos.length} aguardando validação</span>
+          )}
+        </h1>
       </div>
 
       {loading ? (
         <div className="skeleton-list" />
       ) : termos.length === 0 ? (
-        <EmptyState
-          icon="✔"
-          title="Tudo em dia"
-          description="Não há Termos de Responsabilidade pendentes no momento."
-        />
+        <EmptyState icon="✔" title="Nenhum termo pendente" />
       ) : (
         <div className="reservation-list">
           {termos.map((t) => (
@@ -80,12 +86,15 @@ export default function TermosAdmin() {
                     Matrícula {t.usuario_matricula} · Entidade {ENTIDADE_LABELS[t.entidade]}
                   </p>
                 </div>
+                <button type="button" className="link" onClick={() => abrirPdf(t)}>
+                  Ver documento
+                </button>
               </div>
 
               <div className="reservation-dates">
                 <div>
-                  <small>Data da solicitação</small>
-                  <span>{formatDate(t.data_solicitacao)}</span>
+                  <small>Solicitado em</small>
+                  <span>{t.criado_em ? formatDateTime(t.criado_em) : formatDate(t.data_solicitacao)}</span>
                 </div>
                 <div>
                   <small>CPF</small>
@@ -97,36 +106,32 @@ export default function TermosAdmin() {
                 </div>
               </div>
 
-              <button type="button" className="link" onClick={() => abrirPdf(t)}>
-                Ver documento gerado (PDF)
-              </button>
-
-              <label className="field">
-                <span>Observação (opcional)</span>
+              <div className="reservation-decision">
                 <input
+                  type="text"
+                  aria-label="Observação para o usuário"
                   value={observacoes[t.id] || ''}
                   onChange={(e) =>
                     setObservacoes((o) => ({ ...o, [t.id]: e.target.value }))
                   }
-                  placeholder="Ex.: CNH vencida, favor reenviar."
+                  placeholder="Observação (opcional)"
                 />
-              </label>
-
-              <div className="reservation-actions">
-                <button
-                  className="btn btn-ghost-danger btn-sm"
-                  disabled={processando === t.id}
-                  onClick={() => setTermoRejeitar(t)}
-                >
-                  Rejeitar
-                </button>
-                <button
-                  className="btn btn-primary btn-sm"
-                  disabled={processando === t.id}
-                  onClick={() => handleDecisao(t, 'aprovado')}
-                >
-                  {processando === t.id ? 'Processando…' : 'Aprovar'}
-                </button>
+                <div className="reservation-actions">
+                  <button
+                    className="btn btn-ghost-danger btn-sm"
+                    disabled={processando === t.id}
+                    onClick={() => setTermoRejeitar(t)}
+                  >
+                    Rejeitar
+                  </button>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    disabled={processando === t.id}
+                    onClick={() => handleDecisao(t, 'aprovado')}
+                  >
+                    {processando === t.id ? 'Processando…' : 'Aprovar'}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -134,37 +139,24 @@ export default function TermosAdmin() {
       )}
 
       {termoRejeitar && (
-        <Modal title="Rejeitar Termo" onClose={() => setTermoRejeitar(null)} width={500}>
-          <div className="form-grid">
-            <p>Tem certeza que deseja rejeitar este Termo de Responsabilidade?</p>
-            <div className="admin-note">
-              <strong>{termoRejeitar.usuario_nome}</strong>
-              <br />
-              <span>Matrícula {termoRejeitar.usuario_matricula}</span>
-            </div>
-            <p className="muted-note">
-              O usuário permanecerá sem poder reservar veículos até enviar um novo termo.
-            </p>
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => setTermoRejeitar(null)}
-                disabled={processando === termoRejeitar.id}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost-danger"
-                onClick={() => handleDecisao(termoRejeitar, 'rejeitado')}
-                disabled={processando === termoRejeitar.id}
-              >
-                {processando === termoRejeitar.id ? 'Processando…' : 'Sim, rejeitar'}
-              </button>
-            </div>
+        <ConfirmDialog
+          title="Rejeitar termo"
+          message="O usuário ficará sem poder reservar até enviar um novo termo."
+          confirmLabel="Rejeitar"
+          tone="danger"
+          requireReason
+          reasonPlaceholder="Motivo da rejeição do termo"
+          initialReason={observacoes[termoRejeitar.id] || ''}
+          loading={processando === termoRejeitar.id}
+          onConfirm={(motivo) => handleDecisao(termoRejeitar, 'rejeitado', motivo)}
+          onCancel={() => setTermoRejeitar(null)}
+        >
+          <div className="admin-note">
+            <strong>{termoRejeitar.usuario_nome}</strong>
+            <br />
+            <span>Matrícula {termoRejeitar.usuario_matricula}</span>
           </div>
-        </Modal>
+        </ConfirmDialog>
       )}
     </div>
   )

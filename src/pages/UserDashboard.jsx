@@ -46,22 +46,34 @@ export default function Dashboard() {
   return (
     <div className="page">
       <div className="page-header">
-        <div>
-          <h1>Olá, {user?.nome?.split(' ')[0]}</h1>
-          <p className="page-subtitle">Aqui está o resumo da frota hoje.</p>
-        </div>
+        <h1>Olá, {user?.nome?.split(' ')[0]}</h1>
         <Link className="btn btn-primary" to="/veiculos">
-          Nova solicitação
+          Reservar veículo
         </Link>
       </div>
 
+      {(!user?.is_active || (user?.termo && !user.termo.pode_reservar)) && (
+        <div className="admin-note form-error">
+          <strong>Conta / Termo:</strong>{' '}
+          {user?.termo?.mensagem || 'Sua conta está inativa. Renove o termo de responsabilidade.'}{' '}
+          <Link className="link" to="/meu-termo">
+            Renovar termo
+          </Link>
+        </div>
+      )}
+
+      {user?.cnh && (!user.cnh.pode_reservar || user.cnh.proxima_do_vencimento) && (
+        <div className={`admin-note ${!user.cnh.pode_reservar ? 'form-error' : ''}`}>
+          <strong>CNH:</strong> {user.cnh.mensagem}{' '}
+          <Link className="link" to="/minha-cnh">
+            Gerenciar CNH
+          </Link>
+        </div>
+      )}
+
       <div className="stat-grid">
         <div className="stat-card">
-          <span className="stat-label">Veículos disponíveis</span>
-          <span className="stat-value">{loading ? '—' : veiculos.length}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Minhas solicitações pendentes</span>
+          <span className="stat-label">Solicitações pendentes</span>
           <span className="stat-value">{loading ? '—' : pendentes}</span>
         </div>
         <div className="stat-card">
@@ -80,7 +92,10 @@ export default function Dashboard() {
 
       <div className="panel">
         <div className="panel-header">
-          <h2>Veículos disponíveis agora</h2>
+          <h2>
+            Veículos disponíveis
+            {!loading && <span className="page-count page-count-neutral">{veiculos.length}</span>}
+          </h2>
           <Link to="/veiculos" className="link">
             Ver todos
           </Link>
@@ -118,30 +133,47 @@ export default function Dashboard() {
         {loading ? (
           <div className="skeleton-list" />
         ) : reservas.length === 0 ? (
-          <p className="muted-note">Nenhuma reserva registrada ainda.</p>
+          <p className="muted-note">Nenhuma reserva ainda.</p>
         ) : (
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Veículo</th>
-                <th>Retirada</th>
-                <th>Devolução</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            <div className="table-desktop-only table-scroll">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Veículo</th>
+                    <th>Retirada</th>
+                    <th>Devolução</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reservas.slice(0, 5).map((r) => (
+                    <tr key={r.id}>
+                      <td>{r.veiculo_info || `Veículo #${r.veiculo}`}</td>
+                      <td>{formatDateTime(r.data_inicio)}</td>
+                      <td>{formatDateTime(r.data_fim)}</td>
+                      <td>
+                        <StatusBadge status={r.status} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mobile-card-list">
               {reservas.slice(0, 5).map((r) => (
-                <tr key={r.id}>
-                  <td>{r.veiculo_info || `Veículo #${r.veiculo}`}</td>
-                  <td>{formatDateTime(r.data_inicio)}</td>
-                  <td>{formatDateTime(r.data_fim)}</td>
-                  <td>
+                <article key={r.id} className="mobile-entity-card">
+                  <div className="mobile-entity-card-head">
+                    <strong>{r.veiculo_info || `Veículo #${r.veiculo}`}</strong>
                     <StatusBadge status={r.status} />
-                  </td>
-                </tr>
+                  </div>
+                  <p className="muted-note">
+                    {formatDateTime(r.data_inicio)} → {formatDateTime(r.data_fim)}
+                  </p>
+                </article>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </>
         )}
       </div>
     </div>

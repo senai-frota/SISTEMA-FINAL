@@ -28,6 +28,8 @@ const empty = {
   capacidade: 5,
   status: 'disponivel',
   observacoes: '',
+  km_atual: 0,
+  data_ultima_manutencao: '',
 }
 
 /*
@@ -243,18 +245,27 @@ export default function VehicleFormModal({
   onClose,
   onSaved,
 }) {
-  const [form, setForm] = useState(
-    veiculo
-      ? {
-          ...empty,
-          ...veiculo,
-          placa: veiculo.placa || '',
-          modelo: simplificarModelo(
-            veiculo.modelo || ''
-          ),
-        }
-      : empty
-  )
+  const [form, setForm] = useState(() => {
+    if (!veiculo) return empty
+    return {
+      ...empty,
+      placa: veiculo.placa || '',
+      marca: veiculo.marca || '',
+      modelo: veiculo.modelo || '',
+      ano: veiculo.ano || new Date().getFullYear(),
+      cor: veiculo.cor || '',
+      tipo_combustivel: veiculo.tipo_combustivel || 'flex',
+      capacidade: veiculo.capacidade ?? 5,
+      status: veiculo.status || 'disponivel',
+      observacoes: veiculo.observacoes || '',
+      km_atual: veiculo.km_atual ?? 0,
+      data_ultima_manutencao: veiculo.data_ultima_manutencao
+        ? String(veiculo.data_ultima_manutencao).slice(0, 10)
+        : '',
+    }
+  })
+
+  const isEdit = !!veiculo
 
   const [marcas, setMarcas] = useState([])
   const [modelos, setModelos] = useState([])
@@ -568,21 +579,17 @@ export default function VehicleFormModal({
 
     try {
       const dados = {
-        ...form,
-
-        placa: normalizarPlaca(
-          form.placa
-        ),
-
-        modelo: simplificarModelo(
-          form.modelo
-        ),
-
+        placa: normalizarPlaca(form.placa),
+        marca: form.marca,
+        modelo: isEdit ? form.modelo : simplificarModelo(form.modelo),
         ano: Number(form.ano),
-
-        capacidade: Number(
-          form.capacidade
-        ),
+        cor: form.cor,
+        tipo_combustivel: form.tipo_combustivel,
+        capacidade: Number(form.capacidade),
+        status: form.status,
+        observacoes: form.observacoes || '',
+        km_atual: Number(form.km_atual || 0),
+        data_ultima_manutencao: form.data_ultima_manutencao || null,
       }
 
       if (veiculo) {
@@ -644,126 +651,123 @@ export default function VehicleFormModal({
         onSubmit={handleSubmit}
         className="form-grid"
       >
-        {/* PLACA */}
+        {/* PLACA + STATUS */}
 
-        <label className="field">
-          <span>Placa</span>
+        <div className="field-row">
+          <label className="field">
+            <span>Placa</span>
 
-          <input
-            value={form.placa}
-            onChange={
-              handlePlacaChange
-            }
-            placeholder="ABC-1234 ou ABC1D23"
-            maxLength={8}
-            required
-            autoComplete="off"
-          />
+            <input
+              value={form.placa}
+              onChange={handlePlacaChange}
+              placeholder="ABC-1234 ou ABC1D23"
+              maxLength={8}
+              required
+              autoComplete="off"
+            />
 
-          <small className="muted-note">
-            Formatos aceitos:
-            ABC-1234 ou ABC1D23
-          </small>
+            {errors.placa && (
+              <small className="field-error">
+                {Array.isArray(errors.placa) ? errors.placa[0] : errors.placa}
+              </small>
+            )}
+          </label>
 
-          {errors.placa && (
-            <small className="field-error">
-              {Array.isArray(
-                errors.placa
-              )
-                ? errors.placa[0]
-                : errors.placa}
-            </small>
-          )}
-        </label>
+          <label className="field">
+            <span>Status</span>
 
-        {/* MARCA */}
+            <select
+              value={form.status}
+              onChange={(e) => update('status', e.target.value)}
+            >
+              {STATUS.map((s) => (
+                <option key={s.value} value={s.value}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
-        <label className="field">
-          <span>Marca</span>
+        {/* MARCA + MODELO */}
 
-          <select
-            value={codigoMarca}
-            onChange={
-              handleMarcaChange
-            }
-            disabled={
-              loadingMarcas
-            }
-            required
-          >
-            <option value="">
-              {loadingMarcas
-                ? 'Carregando marcas…'
-                : 'Selecione uma marca'}
-            </option>
+        <div className="field-row">
+          <label className="field">
+            <span>Marca</span>
 
-            {marcas.map((marca) => (
-              <option
-                key={marca.codigo}
-                value={marca.codigo}
+            {isEdit ? (
+              <input
+                value={form.marca}
+                onChange={(e) => update('marca', e.target.value)}
+                required
+              />
+            ) : (
+              <select
+                value={codigoMarca}
+                onChange={handleMarcaChange}
+                disabled={loadingMarcas}
+                required
               >
-                {marca.nome}
-              </option>
-            ))}
-          </select>
+                <option value="">
+                  {loadingMarcas
+                    ? 'Carregando marcas…'
+                    : 'Selecione uma marca'}
+                </option>
 
-          {errors.marca && (
-            <small className="field-error">
-              {Array.isArray(
-                errors.marca
-              )
-                ? errors.marca[0]
-                : errors.marca}
-            </small>
-          )}
-        </label>
+                {marcas.map((marca) => (
+                  <option key={marca.codigo} value={marca.codigo}>
+                    {marca.nome}
+                  </option>
+                ))}
+              </select>
+            )}
 
-        {/* MODELO */}
+            {errors.marca && (
+              <small className="field-error">
+                {Array.isArray(errors.marca) ? errors.marca[0] : errors.marca}
+              </small>
+            )}
+          </label>
 
-        <label className="field">
-          <span>Modelo</span>
+          <label className="field">
+            <span>Modelo</span>
 
-          <select
-            value={codigoModelo}
-            onChange={
-              handleModeloChange
-            }
-            disabled={
-              !codigoMarca ||
-              loadingModelos
-            }
-            required
-          >
-            <option value="">
-              {!codigoMarca
-                ? 'Selecione uma marca primeiro'
-                : loadingModelos
-                  ? 'Carregando modelos…'
-                  : 'Selecione um modelo'}
-            </option>
-
-            {modelos.map((modelo) => (
-              <option
-                key={modelo.codigo}
-                value={modelo.codigo}
+            {isEdit ? (
+              <input
+                value={form.modelo}
+                onChange={(e) => update('modelo', e.target.value)}
+                required
+              />
+            ) : (
+              <select
+                value={codigoModelo}
+                onChange={handleModeloChange}
+                disabled={!codigoMarca || loadingModelos}
+                required
               >
-                {simplificarModelo(
-                  modelo.nome
-                )}
-              </option>
-            ))}
-          </select>
+                <option value="">
+                  {!codigoMarca
+                    ? 'Selecione uma marca primeiro'
+                    : loadingModelos
+                      ? 'Carregando modelos…'
+                      : 'Selecione um modelo'}
+                </option>
 
-          {errors.modelo && (
-            <small className="field-error">
-              {Array.isArray(
-                errors.modelo
-              )
-                ? errors.modelo[0]
-                : errors.modelo}
-            </small>
-          )}
-        </label>
+                {modelos.map((modelo) => (
+                  <option key={modelo.codigo} value={modelo.codigo}>
+                    {simplificarModelo(modelo.nome)}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {errors.modelo && (
+              <small className="field-error">
+                {Array.isArray(errors.modelo) ? errors.modelo[0] : errors.modelo}
+              </small>
+            )}
+          </label>
+        </div>
 
         {/* ANO */}
 
@@ -771,62 +775,46 @@ export default function VehicleFormModal({
           <label className="field">
             <span>Ano</span>
 
-            <select
-              value={
-                anos.find(
-                  (ano) => {
-                    const anoNumerico =
-                      parseInt(
-                        ano.nome
-                          .split(
-                            ' '
-                          )[0],
-                        10
-                      )
-
-                    return (
-                      anoNumerico ===
-                      Number(
-                        form.ano
-                      )
-                    )
-                  }
-                )?.codigo || ''
-              }
-              onChange={
-                handleAnoChange
-              }
-              disabled={
-                !codigoModelo ||
-                loadingAnos
-              }
-              required
-            >
-              <option value="">
-                {!codigoModelo
-                  ? 'Selecione um modelo primeiro'
-                  : loadingAnos
-                    ? 'Carregando anos…'
-                    : 'Selecione um ano'}
-              </option>
-
-              {anos.map((ano) => (
-                <option
-                  key={ano.codigo}
-                  value={ano.codigo}
-                >
-                  {ano.nome}
+            {isEdit ? (
+              <input
+                type="number"
+                min={1990}
+                max={new Date().getFullYear() + 1}
+                value={form.ano}
+                onChange={(e) => update('ano', e.target.value)}
+                required
+              />
+            ) : (
+              <select
+                value={
+                  anos.find((ano) => {
+                    const anoNumerico = parseInt(ano.nome.split(' ')[0], 10)
+                    return anoNumerico === Number(form.ano)
+                  })?.codigo || ''
+                }
+                onChange={handleAnoChange}
+                disabled={!codigoModelo || loadingAnos}
+                required
+              >
+                <option value="">
+                  {!codigoModelo
+                    ? 'Selecione um modelo primeiro'
+                    : loadingAnos
+                      ? 'Carregando anos…'
+                      : 'Selecione um ano'}
                 </option>
-              ))}
-            </select>
+
+                {anos.map((ano) => (
+                  <option key={ano.codigo} value={ano.codigo}>
+                    {ano.nome}
+                  </option>
+                ))}
+              </select>
+            )}
 
             {errors.ano && (
               <small className="field-error">
-                {Array.isArray(
-                  errors.ano
-                )
-                  ? errors.ano[0]
-                  : errors.ano}
+                {Array.isArray(errors.ano) ? errors.ano[0] : errors.ano}
               </small>
             )}
           </label>
@@ -901,30 +889,32 @@ export default function VehicleFormModal({
           </label>
         </div>
 
-        {/* STATUS */}
-
-        <label className="field">
-          <span>Status</span>
-
-          <select
-            value={form.status}
-            onChange={(e) =>
-              update(
-                'status',
-                e.target.value
-              )
-            }
-          >
-            {STATUS.map((s) => (
-              <option
-                key={s.value}
-                value={s.value}
-              >
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="field-row">
+          <label className="field">
+            <span>KM atual</span>
+            <input
+              type="number"
+              min={0}
+              step="1"
+              value={form.km_atual ?? 0}
+              onChange={(e) => update('km_atual', e.target.value)}
+              required
+            />
+            {errors.km_atual && (
+              <small className="field-error">
+                {Array.isArray(errors.km_atual) ? errors.km_atual[0] : errors.km_atual}
+              </small>
+            )}
+          </label>
+          <label className="field">
+            <span>Última manutenção</span>
+            <input
+              type="date"
+              value={form.data_ultima_manutencao || ''}
+              onChange={(e) => update('data_ultima_manutencao', e.target.value)}
+            />
+          </label>
+        </div>
 
         {/* OBSERVAÇÕES */}
 
@@ -975,7 +965,7 @@ export default function VehicleFormModal({
           >
             {saving
               ? 'Salvando…'
-              : 'Salvar veículo'}
+              : 'Salvar'}
           </button>
         </div>
       </form>

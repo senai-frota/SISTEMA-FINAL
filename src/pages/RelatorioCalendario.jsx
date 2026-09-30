@@ -68,12 +68,7 @@ export default function RelatorioCalendario() {
   return (
     <div className="page">
       <div className="page-header">
-        <div>
-          <h1>Relatório de calendário</h1>
-          <p className="page-subtitle">
-            Veja quais dias tiveram mais ou menos reservas no mês.
-          </p>
-        </div>
+        <h1>Calendário de reservas</h1>
       </div>
 
       <div className="toolbar calendar-toolbar">
@@ -96,7 +91,7 @@ export default function RelatorioCalendario() {
         <>
           <div className="stat-grid">
             <div className="stat-card">
-              <span className="stat-label">Total de reservas no mês</span>
+              <span className="stat-label">Reservas no mês</span>
               <span className="stat-value">{dados.total_reservas_no_periodo}</span>
             </div>
             <div className="stat-card">
@@ -114,16 +109,8 @@ export default function RelatorioCalendario() {
           </div>
 
           <div className="panel">
-            <div className="panel-header">
-              <div>
-                <h2>Calendário de movimento</h2>
-                <p className="muted-note">
-                  Cada dia mostra quantas reservas estavam em uso naquela data.
-                </p>
-              </div>
-            </div>
-
             <div className="calendar-legend">
+              <span className="muted-note">Reservas em uso por dia:</span>
               {Object.entries(NIVEL_LABELS).map(([nivel, label]) => (
                 <span key={nivel} className="calendar-legend-item">
                   <span className={`calendar-dot nivel-${nivel}`} />
