@@ -71,15 +71,3 @@ docker compose exec backend python manage.py createsuperuser
 ```
 
 **Nunca** execute `docker compose down -v` em ambiente com dados reais.
-
-## Limitações
-
-- E-mail institucional desligado até a TI autorizar SMTP (`FROTA_EMAIL_ENABLED`).
-- A UI de vistoria usa `POST /api/vistorias/registrar/`. Os endpoints `POST /api/reservas/<id>/iniciar/` e `/finalizar/` existem e permanecem.
-- Check-out não tem teto de 24 h: só é recusado se for antes da janela de início (±30 min).
-- `/media/` no Nginx não exige autenticação (URLs de upload).
-- Restauração de backup e TLS na borda **não** foram ensaiados neste repositório. Não há declaração de conformidade LGPD.
-
-## Segurança
-
-Não versione `.env`. Não publique senhas, `SECRET_KEY` nem `AUDITORIA_CHAVE_INTEGRIDADE`. Checklist: [docs/seguranca/checklist.md](docs/seguranca/checklist.md).
