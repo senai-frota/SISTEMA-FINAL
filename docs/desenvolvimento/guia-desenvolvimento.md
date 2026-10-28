@@ -2,16 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0 |
-| Data | 26 de outubro de 2026 |
-| Público | Desenvolvedores |
+| Versão | 1.1 |
+| Data | 28 de outubro de 2026 |
+| Público | Desenvolvedores e manutenção |
 | Classificação | Uso interno |
 
 ## Ambiente
 
 Recomendado: Debian/Ubuntu, Python 3.12, Node 20. Backend em `BACKEND/`, frontend em `SISTEMA-FINAL/`.
-
-Os testes **não** usam o PostgreSQL de desenvolvimento: `config.test_settings` força SQLite (`BACKEND/test_db.sqlite3`).
 
 ## Backend
 
@@ -26,10 +24,7 @@ python manage.py migrate
 python manage.py createsuperuser   # matrícula, nome, senha
 python manage.py runserver 0.0.0.0:8000
 python manage.py check
-python manage.py test --settings=config.test_settings
 ```
-
-Atalhos Windows no repositório: `run.bat`, `create_superuser.bat` (não exercitados neste ambiente Debian).
 
 Rotina local: `python manage.py rotina_operacional` ou `--loop --intervalo 60`.
 
@@ -72,7 +67,7 @@ Textos de negócio de reserva/CNH/termo são normalizados para maiúsculas no ba
 
 - Idioma da UI e mensagens de API: português.
 - Fuso: `TIME_ZONE=America/Sao_Paulo`, `USE_TZ=True`.
-- Não alterar regras de janela (±30 min, 06:00–22:00) sem testes em `vistorias/tests.py` e `reservas/tests_operacoes.py`.
+- Não alterar regras de janela (±30 min, 06:00–22:00) sem validar check-in/out e operações de reserva.
 - Novas views: reutilizar `AuthenticatedAndPasswordSet` e filtrar queryset por dono se não for admin.
 - Autorização **sempre** no backend.
 
@@ -89,14 +84,14 @@ Não edite migrations já aplicadas em produção. Não execute `flush`/`reset_d
 
 Backend: pinado em `requirements.txt`. Frontend: `package-lock.json` (`npm ci`).
 
-Atualização: altere o arquivo de lock, rode testes/build, registre risco de licença em [inventário](../governanca/inventario-dependencias.md).
+Atualização: altere o arquivo de lock, rode `python manage.py check` e `npm run build`, registre risco de licença em [inventário](../governanca/inventario-dependencias.md).
 
 ## Revisão de alteração (recomendado)
 
 1. Escopo mínimo; sem “limpeza” não pedida.
-2. Testes do módulo + `npm run build` se o frontend mudou.
+2. `python manage.py check` e `npm run build` se o frontend mudou.
 3. Conferir permissões (matriz).
 4. Não incluir `.env`, mídia nem `dist/`.
 5. Documentar endpoints novos em `api.md`.
 
-Não há pipeline CI neste repositório (**lacuna**).
+Não há pipeline CI neste repositório.

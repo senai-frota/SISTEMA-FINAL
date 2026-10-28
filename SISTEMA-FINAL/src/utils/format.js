@@ -28,16 +28,6 @@ export function formatDate(value) {
   return date.toLocaleDateString('pt-BR')
 }
 
-export function toDatetimeLocalValue(value) {
-  if (!value) return ''
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-  const pad = (n) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
-    date.getHours()
-  )}:${pad(date.getMinutes())}`
-}
-
 export const COMBUSTIVEL_LABELS = {
   gasolina: 'Gasolina',
   etanol: 'Etanol',

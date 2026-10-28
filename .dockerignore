@@ -11,6 +11,10 @@
 **/media
 **/staticfiles
 **/*.pyc
+**/*.sqlite3
+**/tests.py
+**/test_*.py
+**/*.test.js
 **/.idea
 **/.vscode
 **/agent-transcripts

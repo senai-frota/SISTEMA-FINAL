@@ -37,7 +37,6 @@ export default function MeuTermo() {
 
   useEffect(() => {
     load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function update(field, value) {

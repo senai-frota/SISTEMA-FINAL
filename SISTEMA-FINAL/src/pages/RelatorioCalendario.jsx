@@ -44,7 +44,6 @@ export default function RelatorioCalendario() {
 
   useEffect(() => {
     load()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mes, ano])
 
   function mudarMes(delta) {

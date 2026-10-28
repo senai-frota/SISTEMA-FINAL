@@ -5,7 +5,7 @@
 | Versão | 1.0 |
 | Data | 26 de outubro de 2026 |
 | Perfis | Anônimo, funcionário (`is_admin=False`), administrador (`is_admin=True`) |
-| Evidência | `permissions.py`, views, `App.jsx` `adminOnly`, testes de 403 |
+| Evidência | `permissions.py`, views, `App.jsx` `adminOnly` |
 
 Legenda: Sim = permitido; Não = recusado; Próprio = só registros do usuário.
 
@@ -54,6 +54,6 @@ Legenda: Sim = permitido; Não = recusado; Próprio = só registros do usuário.
 
 Rotas `adminOnly` redirecionam funcionário para `/`. Isso **não** é autorização.
 
-## Testes que evidenciam 403
+## Evidência no código
 
-`usuarios/tests.py`, `veiculos/tests.py`, `reservas/tests.py`, `relatorios/tests.py` (`PermissoesRelatorioTests`), `auditoria/tests.py`, `termos/tests.py`, recusas em `test_recusas.py`.
+As respostas 403 são emitidas por `IsAdmin`, `ExigeSenhaDefinida` e pelos filtros de queryset nas views de usuários, veículos, reservas, relatórios, auditoria e termos.

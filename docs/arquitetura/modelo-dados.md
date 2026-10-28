@@ -6,7 +6,7 @@
 | Data | 26 de outubro de 2026 |
 | Público | Desenvolvedores e DBA |
 | Classificação | Uso interno |
-| ORM | Django 5.2, PostgreSQL em produção, SQLite só nos testes |
+| ORM | Django 5.2, PostgreSQL em produção |
 
 ## Objetivo
 

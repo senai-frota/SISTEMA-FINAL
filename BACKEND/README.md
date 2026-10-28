@@ -15,9 +15,6 @@ python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver 0.0.0.0:8000
 python manage.py check
-python manage.py test --settings=config.test_settings
 ```
-
-Atalhos Windows: `run.bat`, `create_superuser.bat`.
 
 Para Docker no Debian use o `.env` da **raiz** do projeto (`../.env.example`), não este arquivo como `.env` do Compose.

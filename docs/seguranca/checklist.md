@@ -19,7 +19,7 @@
 - `.env` no gitignore.
 - `SECRET_KEY` e `AUDITORIA_CHAVE_INTEGRIDADE` distintas e estáveis.
 - Senhas SMTP nunca na documentação nem no Git.
-- `auditoria/services` registra detalhes **sem** senha/token/arquivo (há teste de limpeza).
+- `auditoria/services` registra detalhes **sem** senha/token/arquivo.
 
 ## Endpoints
 

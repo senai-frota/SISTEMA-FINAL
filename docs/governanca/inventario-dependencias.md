@@ -2,8 +2,8 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0 |
-| Data | 26 de outubro de 2026 |
+| Versão | 1.1 |
+| Data | 28 de outubro de 2026 |
 | Fontes | `requirements.txt`, `package-lock.json` (versões de package.json), imagens Docker |
 
 Licenças: conferidas pelos nomes dos pacotes (MIT/BSD/Apache típicos). Não há varredura `pip-licenses` neste repositório.
@@ -35,7 +35,6 @@ Licenças: conferidas pelos nomes dos pacotes (MIT/BSD/Apache típicos). Não h�
 | requests | 2.34.2 |
 | PyJWT | 2.13.0 |
 | boto3 | >=1.35,<2 |
-| reportlab | 4.4.3 |
 | openpyxl | 3.1.5 |
 
 Python da imagem: 3.12-slim-bookworm.

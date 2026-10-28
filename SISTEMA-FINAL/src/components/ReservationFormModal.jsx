@@ -110,7 +110,6 @@ export default function ReservationFormModal({
       cancelado = true
       clearTimeout(t)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     modalidade,
     form.data,

@@ -102,7 +102,6 @@ export default function VistoriaModal({ reserva, tipo, onClose, onDone }) {
     return () => {
       cancelado = true
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reserva.id, tipo])
 
   useEffect(() => {

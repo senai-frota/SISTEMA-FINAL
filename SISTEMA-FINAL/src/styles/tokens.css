@@ -27,15 +27,9 @@
      ======================================================= */
 
   --senai-gray: #7d8085;
-  --senai-gray-light: #d9dadd;
   --senai-gray-lighter: #f1f2f3;
 
   --senai-white: #ffffff;
-
-  /*
-     Mantido para compatibilidade com componentes antigos.
-  */
-  --senai-black: #34373c;
 
 
   /* =======================================================

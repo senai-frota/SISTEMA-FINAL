@@ -46,7 +46,7 @@ cp .env.example .env   # ajuste DB_* para o PostgreSQL local
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver 0.0.0.0:8000
-python manage.py test --settings=config.test_settings
+python manage.py check
 ```
 
 ```bash

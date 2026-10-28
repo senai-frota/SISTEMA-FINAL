@@ -448,12 +448,6 @@ button.link {
   gap: 8px;
 }
 
-.page-subtitle {
-  color: var(--color-text-muted);
-  font-size: 13.5px;
-  margin-top: 2px;
-}
-
 /* Contador/etiqueta curta ao lado de títulos (ex.: "3 pendentes"). */
 .page-count {
   display: inline-flex;
@@ -1674,83 +1668,6 @@ textarea:focus {
   padding: 6px 8px;
 }
 
-.photo-remove {
-  position: absolute;
-
-  top: 4px;
-  right: 4px;
-
-  width: 20px;
-  height: 20px;
-
-  border-radius: 50%;
-
-  border: none;
-
-  background: var(
-    --photo-remove-bg,
-    rgba(183, 5, 15, 0.9)
-  );
-
-  color: #ffffff;
-
-  font-size: 11px;
-
-  cursor: pointer;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-}
-
-.photo-upload-tile {
-  border: 1.5px dashed var(--color-border);
-
-  border-radius: var(--radius-sm);
-
-  height: 90px;
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-  justify-content: center;
-
-  gap: 2px;
-
-  cursor: pointer;
-
-  color: var(--color-text-muted);
-
-  align-self: flex-start;
-
-  width: 100%;
-
-  transition:
-    border-color var(--transition-fast),
-    color var(--transition-fast),
-    background-color var(--transition-fast);
-}
-
-.photo-upload-tile:hover {
-  border-color: var(--color-primary);
-
-  color: var(--color-primary);
-
-  background: var(--color-primary-tint);
-}
-
-.photo-upload-tile span {
-  font-size: 20px;
-  line-height: 1;
-}
-
-.photo-upload-tile small {
-  font-size: 11px;
-}
-
 
 /* =========================================================
    LOGIN SCREEN
@@ -1984,63 +1901,6 @@ textarea:focus {
 
 
 /* =========================================================
-   UPCOMING RESERVATIONS
-   ========================================================= */
-
-.admin-upcoming {
-  margin-bottom: 0;
-}
-
-.admin-upcoming .panel-header {
-  margin-bottom: 12px;
-}
-
-.upcoming-list {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 12px;
-}
-
-.upcoming-reservation {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 3px;
-
-  padding-bottom: 12px;
-
-  border-bottom: 1px solid var(--color-border);
-}
-
-.upcoming-reservation:last-child {
-  border-bottom: none;
-
-  padding-bottom: 0;
-}
-
-.upcoming-reservation strong {
-  font-family: var(--font-display);
-
-  font-size: 14px;
-}
-
-.upcoming-reservation span {
-  font-size: 13px;
-
-  font-weight: 600;
-}
-
-.upcoming-reservation small {
-  color: var(--color-text-muted);
-
-  font-size: 12px;
-}
-
-
-/* =========================================================
    POWERED BY
    ========================================================= */
 
@@ -2085,117 +1945,6 @@ textarea:focus {
   color: var(--color-text);
 
   letter-spacing: 0.03em;
-}
-
-
-/* =========================================================
-   RESERVATION PERIOD
-   ========================================================= */
-
-.reservation-period {
-  padding: 16px;
-
-  border: 1px solid var(--color-border);
-
-  border-radius: var(--radius-md);
-
-  background: var(--color-surface);
-}
-
-.reservation-period-header {
-  display: flex;
-
-  align-items: center;
-
-  gap: 10px;
-
-  margin-bottom: 15px;
-}
-
-.reservation-period-header > div {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 2px;
-}
-
-.reservation-period-header strong {
-  font-size: 14px;
-
-  font-weight: 600;
-}
-
-.reservation-period-header small {
-  font-size: 12px;
-
-  color: var(--color-text-muted);
-}
-
-.reservation-period-number {
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  width: 28px;
-  height: 28px;
-
-  flex-shrink: 0;
-
-  border-radius: 50%;
-
-  background: var(--color-primary);
-
-  color: #ffffff;
-
-  font-size: 12px;
-
-  font-weight: 700;
-}
-
-.reservation-period .field-row {
-  display: grid;
-
-  grid-template-columns: 1.4fr 1fr;
-
-  gap: 12px;
-}
-
-.reservation-period input[type="date"],
-.reservation-period select {
-  width: 100%;
-
-  min-height: 42px;
-
-  box-sizing: border-box;
-}
-
-.reservation-period input[type="date"] {
-  appearance: none;
-  -webkit-appearance: none;
-}
-
-.reservation-period input[type="date"]::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  opacity: 0.65;
-}
-
-.reservation-period input[type="date"]:focus::-webkit-calendar-picker-indicator {
-  opacity: 1;
-}
-
-.reservation-period input:focus,
-.reservation-period select:focus {
-  outline: none;
-}
-
-.reservation-period .field-error {
-  display: block;
-
-  margin-top: 5px;
-
-  line-height: 1.35;
 }
 
 
@@ -2350,20 +2099,6 @@ textarea:focus {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .reservation-period {
-    padding: 14px;
-  }
-
-  .reservation-period .field-row {
-    grid-template-columns: 1fr;
-
-    gap: 12px;
-  }
-
-  .reservation-period-header {
-    margin-bottom: 13px;
-  }
-
   .page-header {
     flex-direction: column;
   }
@@ -2390,11 +2125,6 @@ textarea:focus {
 
   .page-header h1 {
     font-size: 21px;
-  }
-
-  .page-subtitle {
-    font-size: 13.5px;
-    line-height: 1.45;
   }
 
   .page-header .btn {
@@ -2959,10 +2689,6 @@ textarea:focus {
 
   .login-screen {
     min-height: 100dvh;
-  }
-
-  .login-form-panel {
-    padding: 24px 18px calc(24px + env(safe-area-inset-bottom, 0px));
   }
 }
 

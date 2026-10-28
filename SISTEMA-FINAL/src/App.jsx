@@ -30,7 +30,6 @@ function EntradaPeloDashboard() {
     if (!precisaDefinirSenha && location.pathname !== '/') {
       navigate('/', { replace: true })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, user, precisaDefinirSenha])
 
   return null

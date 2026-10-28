@@ -2,15 +2,15 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0 |
-| Data | 26 de outubro de 2026 |
+| Versão | 1.1 |
+| Data | 28 de outubro de 2026 |
 
 Use em cada promoção de versão. Itens “não executados” devem permanecer abertos.
 
-## Build e testes
+## Build
 
-- [ ] `python manage.py test --settings=config.test_settings`
 - [ ] `npm run build` em `SISTEMA-FINAL`
+- [ ] `python manage.py check` no backend
 - [ ] Sem segredos no diff
 
 ## Segurança
@@ -36,10 +36,18 @@ Use em cada promoção de versão. Itens “não executados” devem permanecer 
 
 ## Validação funcional
 
-- [ ] Login admin e funcionário
+- [ ] Login admin e funcionário; primeiro acesso
 - [ ] SPA em `/` e API em `/api/`
 - [ ] Admin Django se utilizado
 - [ ] Upload e leitura `/media/`
+- [ ] Upload CNH e termo; aprovação
+- [ ] Reserva turno e horário; conflito; 14 dias
+- [ ] Check-in mobile com 5 fotos; check-out na mesma unidade
+- [ ] Check-in antecipado
+- [ ] Recusa com e sem justificativa
+- [ ] Relatório Excel (admin) e 403 (funcionário)
+- [ ] Integridade da auditoria
+- [ ] `rotina_operacional` em reserva vencida sem check-in
 - [ ] Uma reserva de homologação (não produção real)
 
 ## Rollback

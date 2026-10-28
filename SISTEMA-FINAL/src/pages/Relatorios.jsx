@@ -121,7 +121,6 @@ export default function Relatorios() {
       .get('/relatorios/opcoes/')
       .then(({ data }) => setOpcoes(data))
       .catch((err) => feedback.erro(mensagemErroApi(err, 'Não foi possível carregar as opções de filtro.')))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -147,7 +146,6 @@ export default function Relatorios() {
       cancelado = true
       clearTimeout(timer)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtros, periodoInvalido, recarregar])
 
   const alterar = useCallback((campo, valor) => {

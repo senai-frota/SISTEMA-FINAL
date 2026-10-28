@@ -11,15 +11,13 @@ Instalação completa: **PostgreSQL + Django/Gunicorn + Nginx (SPA) + rotina ope
 
 ## O que transferir para o servidor
 
-Transfira o **diretório completo** `FROTA/` (não apenas um sub-repositório).
-
-O projeto tem dois históricos Git (`BACKEND/` e `SISTEMA-FINAL/`). Os arquivos Docker ficam na **raiz** e precisam ir junto:
+Transfira o **diretório completo** do repositório (não apenas `BACKEND/` ou `SISTEMA-FINAL/`). Os arquivos Docker ficam na **raiz** e precisam ir junto:
 
 | Incluir | Não incluir |
 |---------|-------------|
 | `compose.yaml`, `.env.example`, `.dockerignore`, `.gitignore` | `.env` do PC intermediário (segredos) |
 | `README-DOCKER.md`, `nginx/` | `SISTEMA-FINAL/node_modules/`, `SISTEMA-FINAL/dist/` |
-| `BACKEND/` (código + `Dockerfile` + `docker-entrypoint.sh` + `requirements.txt`) | `BACKEND/venv/`, `__pycache__/`, `media/`, `staticfiles/` |
+| `BACKEND/` (código + `Dockerfile` + `docker-entrypoint.sh` + `requirements.txt`) | `BACKEND/.venv/`, `__pycache__/`, `media/`, `staticfiles/` |
 | `SISTEMA-FINAL/` (código + `Dockerfile` + `package-lock.json` + `public/`) | backups locais |
 
 Exemplo:

@@ -66,7 +66,6 @@ export default function Veiculos() {
 
     return () => clearTimeout(t)
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, statusFiltro, mostrarInativos, isAdmin])
 
   function abrirConfirmacaoRemocao(veiculo) {
