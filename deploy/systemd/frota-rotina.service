@@ -1,0 +1,15 @@
+[Unit]
+Description=FROTA SENAI — rotina operacional (cancelamento automático e alertas)
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=oneshot
+# Ajuste WorkingDirectory e o caminho do compose.yaml à instalação real.
+# Não habilite este unit se o serviço Compose `rotina` já estiver em execução
+# (ele já roda `rotina_operacional --loop`).
+WorkingDirectory=/opt/frota
+ExecStart=/usr/bin/docker compose -f /opt/frota/compose.yaml exec -T backend python manage.py rotina_operacional
+
+[Install]
+WantedBy=multi-user.target

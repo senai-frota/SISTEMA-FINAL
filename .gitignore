@@ -1,0 +1,43 @@
+# Segredos e ambiente local
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Histórico Git aninhado (mantido só na máquina local; o monorepo versiona os arquivos)
+BACKEND/.git/
+SISTEMA-FINAL/.git/
+.git-nested-backup/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.sqlite3
+.pytest_cache/
+htmlcov/
+.coverage
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Dados persistentes e artefatos locais (não versionar)
+BACKEND/media/
+BACKEND/staticfiles/
+*.dump
+*.tar.gz
+*.log
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+.cursor/

@@ -1,0 +1,127 @@
+# Sistema de Frota SENAI — Docker Compose
+#
+# Implantação:
+#   [ -f .env ] || cp .env.example .env   # não sobrescreve .env existente
+#   # edite SECRET_KEY, DB_PASSWORD, ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS
+#   docker compose up -d --build
+#
+# NÃO use "docker compose down -v" em produção — a flag -v apaga volumes (banco e mídia).
+
+name: frota-senai
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-frota}
+      POSTGRES_USER: ${DB_USER:-frota}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD no arquivo .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Usa variáveis do próprio container (não depende de interpolação do host).
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 18
+      start_period: 15s
+    # Porta NÃO publicada — acesso apenas pela rede interna do Compose.
+
+  backend:
+    build:
+      context: ./BACKEND
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Sobrescreve o .env para a topologia Compose (hostname interno).
+      DEBUG: ${DEBUG:-False}
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_ENGINE: django.db.backends.postgresql
+      DB_SSLMODE: ${DB_SSLMODE:-disable}
+      DB_DISABLE_SERVER_SIDE_CURSORS: ${DB_DISABLE_SERVER_SIDE_CURSORS:-False}
+      USE_SUPABASE_STORAGE: ${USE_SUPABASE_STORAGE:-False}
+      MEDIA_ROOT: /app/media
+      STATIC_ROOT: /app/staticfiles
+      STATIC_URL: /static/
+      MEDIA_URL: /media/
+      USE_X_FORWARDED_HOST: ${USE_X_FORWARDED_HOST:-True}
+    volumes:
+      - media:/app/media
+      - staticfiles:/app/staticfiles
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # Host localhost: mantenha localhost em ALLOWED_HOSTS (healthcheck interno).
+      # Só fica healthy após migrate + collectstatic + Gunicorn (ver entrypoint).
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:8000/admin/login/', headers={'Host': 'localhost'}), timeout=5)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 60s
+    # Sem porta publicada — o Nginx encaminha /api e /admin.
+
+  rotina:
+    build:
+      context: ./BACKEND
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DEBUG: ${DEBUG:-False}
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_ENGINE: django.db.backends.postgresql
+      DB_SSLMODE: ${DB_SSLMODE:-disable}
+      DB_DISABLE_SERVER_SIDE_CURSORS: ${DB_DISABLE_SERVER_SIDE_CURSORS:-False}
+      USE_SUPABASE_STORAGE: ${USE_SUPABASE_STORAGE:-False}
+      MEDIA_ROOT: /app/media
+      STATIC_ROOT: /app/staticfiles
+      SKIP_MIGRATE: "1"
+      SKIP_COLLECTSTATIC: "1"
+    volumes:
+      - media:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    command: ["python", "manage.py", "rotina_operacional", "--loop", "--intervalo", "60"]
+
+  web:
+    build:
+      context: .
+      dockerfile: SISTEMA-FINAL/Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    volumes:
+      - media:/var/www/media:ro
+      - staticfiles:/var/www/static:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pgdata:
+  media:
+  staticfiles:
